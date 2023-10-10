@@ -14,10 +14,6 @@ public class MainController {
     @PostMapping("/signUp")
     public List<String> signUp(HttpServletRequest request, @RequestBody User user) {
 
-        System.out.println("zdsadasdasdsa" + request);
-        System.out.println("user조회111"+ user.getEmail());
-        System.out.println("user조회222"+ user.getPassword());
-        System.out.println("user조회333"+ user.getName());
 
         return Arrays.asList("success");
     }
