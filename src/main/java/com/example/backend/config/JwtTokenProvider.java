@@ -19,6 +19,9 @@ public class JwtTokenProvider {
 
     // JWT 생성 메서드
     public String generateToken(Authentication authentication) {
+        System.out.println("테스트000");
+        System.out.println("테스트111" + authentication.getName());
+
         String username = authentication.getName();
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtExpirationMs);

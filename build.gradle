@@ -24,7 +24,6 @@ repositories {
 
 dependencies {
     implementation 'org.jetbrains:annotations:24.0.0'
-    implementation 'org.springframework.boot:spring-boot-starter-security'
 
     // 소스 변경할 때마다 서버 재시작해서 확인하는 게 번거로울 때  spring-boot-devtools 의존성 추가하기
     developmentOnly("org.springframework.boot:spring-boot-devtools")
@@ -45,8 +44,9 @@ dependencies {
     implementation 'io.jsonwebtoken:jjwt-impl:0.11.5'
     implementation 'io.jsonwebtoken:jjwt-jackson:0.11.5'
 
-    // security 의존성 추가
+    // spring security 의존성 추가
     implementation 'org.springframework.boot:spring-boot-starter-security'
+    testImplementation 'org.springframework.security:spring-security-test'
 }
 
 // 소스 변경할 때마다 서버 재시작해서 확인하는 게 번거로울 때  spring-boot-devtools 의존성 추가하기
