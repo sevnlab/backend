@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 
+import java.io.UnsupportedEncodingException;
+import java.security.Key;
 import java.util.Date;
 
 @Component
@@ -26,12 +28,24 @@ public class JwtTokenProvider {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtExpirationMs);
 
-        return Jwts.builder()
-                .setSubject(username)
-                .setIssuedAt(new Date())
-                .setExpiration(expiryDate)
-                .signWith(SignatureAlgorithm.HS512, jwtSecret)
-                .compact();
+        System.out.println("3333 => " + jwtSecret);
+        System.out.println("Secret Key Length: " + jwtSecret.length());
+
+        try {
+            // 문자열을 바이트 배열로 변환하여 사용
+            byte[] secretKeyBytes = jwtSecret.getBytes("UTF-8");
+
+            return Jwts.builder()
+                    .setSubject(username)
+                    .setIssuedAt(new Date())
+                    .setExpiration(expiryDate)
+                    .signWith(SignatureAlgorithm.HS512, secretKeyBytes)
+                    .compact();
+        } catch (UnsupportedEncodingException e) {
+            // 예외 처리 (로그를 남기거나 예외를 던질 수 있음)
+            throw new RuntimeException("UTF-8 인코딩을 지원하지 않습니다.", e);
+        }
+
     }
 
     // JWT에서 사용자 이름 추출
