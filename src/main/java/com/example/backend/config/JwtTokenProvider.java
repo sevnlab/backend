@@ -20,7 +20,7 @@ public class JwtTokenProvider {
     private int jwtExpirationMs;
 
     // JWT 생성 메서드
-    public String generateToken(Authentication authentication) {
+    public String generateToken(Authentication authentication, String loginType) {
         System.out.println("테스트000");
         System.out.println("테스트111" + authentication.getName());
 
@@ -37,6 +37,7 @@ public class JwtTokenProvider {
 
             return Jwts.builder()
                     .setSubject(username)
+                    .claim("loginType", loginType)
                     .setIssuedAt(new Date())
                     .setExpiration(expiryDate)
                     .signWith(SignatureAlgorithm.HS512, secretKeyBytes)
