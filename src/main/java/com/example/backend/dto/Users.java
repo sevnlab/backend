@@ -28,11 +28,27 @@ public class Users implements Serializable {
     @Column(name = "EMAIL", nullable = false)
     private String email;
 
-    @Column(name = "PASSWORD", nullable = false)
+    @Column(name = "PASSWORD", nullable = true)
     private String password; // 비번은 나중에 해시키로 저장해야함
 
-    @Column(name = "NAME", nullable = false)
+    @Column(name = "NAME", nullable = true)
     private String name;
 
-    // Constructors, getters, and setters
+    @Column(name = "MOBILE", nullable = true)
+    private String mobile;
+
+    @Column(name = "BIRTH", nullable = true)
+    private String BIRTH;
+
+    @Column(name = "ADDRESS", nullable = true)
+    private String ADDRESS;
+
+    @Column(name = "ZIPCODE", nullable = true)
+    private String ZIPCODE;
+
+    @Column(name = "GENDER", nullable = true)
+    private String GENDER;
+
+    @Column(name = "IS_SOCIAL_LOGIN", nullable = true)
+    private boolean isSocialLogin;
 }

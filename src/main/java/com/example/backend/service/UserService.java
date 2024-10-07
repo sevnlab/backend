@@ -2,6 +2,7 @@ package com.example.backend.service;
 
 import com.example.backend.dto.Users;
 import com.example.backend.repository.SignUpRepository;
+import com.example.backend.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -18,6 +19,9 @@ public class UserService implements UserDetailsService {
     private final SignUpRepository signUpRepository;
     private final PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private UserRepository userRepository;
+
     // 생성자 주입
     @Autowired
     public UserService(SignUpRepository signUpRepository, PasswordEncoder passwordEncoder) {
@@ -27,8 +31,16 @@ public class UserService implements UserDetailsService {
 
     @Transactional
     public void signUp(Users users) {
-        users.setPassword(passwordEncoder.encode(users.getPassword())); // 비밀번호를 암호화해서 저장
+        // 네이버 로그인 사용자는 비밀번호를 설정하지 않음
+        if (!users.isSocialLogin()) {
+            users.setPassword(passwordEncoder.encode(users.getPassword())); // 비밀번호를 암호화해서 저장
+        }
         signUpRepository.save(users);
+    }
+
+    // userId로 사용자 조회
+    public Users findByUserId(String userId) {
+        return userRepository.findByUserId(userId);
     }
 
     @Override
