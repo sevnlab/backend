@@ -8,17 +8,17 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-//        registry.addMapping("/**") // ê²½ë¡œì— ëŒ€í•´ì„œ CORS ì„¤ì •
-////                .allowedOrigins("http://localhost:3000") // ë¦¬ì•¡íŠ¸ ì• í”Œë¦¬ì¼€ì´ì…˜ì˜ ë„ë©”ì¸ì„ ì„¤ì •
-//                .allowedOrigins("*") // ë¦¬ì•¡íŠ¸ ì• í”Œë¦¬ì¼€ì´ì…˜ì˜ ë„ë©”ì¸ì„ ì„¤ì •
+//        registry.addMapping("/**") // °æ·Î¿¡ ´ëÇØ¼­ CORS ¼³Á¤
+////                .allowedOrigins("http://localhost:3000") // ¸®¾×Æ® ¾ÖÇÃ¸®ÄÉÀÌ¼ÇÀÇ µµ¸ŞÀÎÀ» ¼³Á¤
+//                .allowedOrigins("*") // ¸®¾×Æ® ¾ÖÇÃ¸®ÄÉÀÌ¼ÇÀÇ µµ¸ŞÀÎÀ» ¼³Á¤
 ////                .allowedMethods("GET", "POST", "PUT", "DELETE")
 //                .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
 //                .allowedHeaders("Authorization", "Content-Type")
 //                .exposedHeaders("Custom-Header")
-//                .allowCredentials(true) // ì¸ì¦ ì •ë³´ë¥¼ ìš”ì²­ í—¤ë”ì— í¬í•¨ì‹œí‚¬ì§€ ì—¬ë¶€
-//                .maxAge(3600); // ìºì‹± ì‹œê°„ (ì´ˆ ë‹¨ìœ„)
-////        registry.addMapping("/v1/reviews/**") // v1/reviews/ ê²½ë¡œì— ëŒ€í•´ì„œ CORS ì„¤ì •
-////                .allowedOrigins("http://localhost:3000") // // í´ë¼ì´ì–¸íŠ¸ì˜ ì£¼ì†Œ
+//                .allowCredentials(true) // ÀÎÁõ Á¤º¸¸¦ ¿äÃ» Çì´õ¿¡ Æ÷ÇÔ½ÃÅ³Áö ¿©ºÎ
+//                .maxAge(3600); // Ä³½Ì ½Ã°£ (ÃÊ ´ÜÀ§)
+////        registry.addMapping("/v1/reviews/**") // v1/reviews/ °æ·Î¿¡ ´ëÇØ¼­ CORS ¼³Á¤
+////                .allowedOrigins("http://localhost:3000") // // Å¬¶óÀÌ¾ğÆ®ÀÇ ÁÖ¼Ò
 ////                .allowedMethods("GET", "POST", "PUT", "DELETE")
 ////                .allowCredentials(true);
     }

@@ -11,7 +11,7 @@ import java.io.Serializable;
 @Setter
 @ToString
 @Entity
-@IdClass(UserPrimaryKey.class) // ë³µí•© ê¸°ë³¸ í‚¤ í´ë˜ìŠ¤ë¥¼ ì§€ì •í•©ë‹ˆë‹¤.
+@IdClass(UserPrimaryKey.class) // º¹ÇÕ ±âº» Å° Å¬·¡½º¸¦ ÁöÁ¤ÇÕ´Ï´Ù.
 public class User implements Serializable {
     @Id
     @Column(name = "email")
@@ -26,7 +26,7 @@ public class User implements Serializable {
     private String name = "";
 
     public User() {
-        // ê¸°ë³¸ ìƒì„±ì ì¶”ê°€
+        // ±âº» »ı¼ºÀÚ Ãß°¡
     }
 
 }

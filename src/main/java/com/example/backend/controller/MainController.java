@@ -12,18 +12,18 @@ import java.util.Arrays;
 import java.util.List;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:3000") // í•´ë‹¹ ì˜¤ë¦¬ì§„ì—ì„œì˜ ìš”ì²­ì„ í—ˆìš©
+@CrossOrigin(origins = "http://localhost:3000") // ÇØ´ç ¿À¸®Áø¿¡¼­ÀÇ ¿äÃ»À» Çã¿ë
 public class MainController {
     @Autowired
     private SignUpRepository signUpRepository;
 
     @PostMapping("/signUp")
     public String signUp(HttpServletRequest request, @RequestBody User user) {
-        signUpRepository.save(user); // Insert ì‘ì—…
+        signUpRepository.save(user); // Insert ÀÛ¾÷
 
-//        í˜„ì¬ ì•„ë˜ë§í¬ ì°¸ì¡°í•´ì„œ ì§„í–‰ì¤‘
+//        ÇöÀç ¾Æ·¡¸µÅ© ÂüÁ¶ÇØ¼­ ÁøÇàÁß
 //        https://mun9659.tistory.com/m/15
 
-        return "íšŒì›ê°€ì…ì´ ì™„ë£Œë˜ì—ˆìŠµë‹ˆë‹¤.";
+        return "È¸¿ø°¡ÀÔÀÌ ¿Ï·áµÇ¾ú½À´Ï´Ù.";
     }
 }

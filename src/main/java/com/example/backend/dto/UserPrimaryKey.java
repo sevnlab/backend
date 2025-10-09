@@ -10,12 +10,12 @@ import java.io.Serializable;
 @Getter
 @Setter
 @ToString
-public class UserPrimaryKey implements Serializable { // JPAì—ì„œ ë³µí•© ê¸°ë³¸ í‚¤ í´ë˜ìŠ¤ëŠ” ì§ë ¬í™”ê°€ ê°€ëŠ¥í•´ì•¼ í•©ë‹ˆë‹¤, JPA ìš”êµ¬ì‚¬í•­
+public class UserPrimaryKey implements Serializable { // JPA¿¡¼­ º¹ÇÕ ±âº» Å° Å¬·¡½º´Â Á÷·ÄÈ­°¡ °¡´ÉÇØ¾ß ÇÕ´Ï´Ù, JPA ¿ä±¸»çÇ×
     private String email = "";
     private String password = "";
     private String name = "";
 
     public UserPrimaryKey() {
-        // ê¸°ë³¸ ìƒì„±ì ì¶”ê°€
+        // ±âº» »ı¼ºÀÚ Ãß°¡
     }
 }

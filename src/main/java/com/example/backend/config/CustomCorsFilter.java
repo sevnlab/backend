@@ -12,12 +12,12 @@ public class CustomCorsFilter extends CorsFilter {
 
     private static UrlBasedCorsConfigurationSource configurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.addAllowedOrigin("*"); // ëª¨ë“  ë„ë©”ì¸ì—ì„œ ìš”ì²­ì„ í—ˆìš©í•˜ë ¤ë©´ * ì‚¬ìš©
-        config.addAllowedMethod("*"); // ëª¨ë“  HTTP ë©”ì„œë“œ í—ˆìš©
-        config.addAllowedHeader("*"); // ëª¨ë“  í—¤ë” í—ˆìš©
+        config.addAllowedOrigin("*"); // ¸ğµç µµ¸ŞÀÎ¿¡¼­ ¿äÃ»À» Çã¿ëÇÏ·Á¸é * »ç¿ë
+        config.addAllowedMethod("*"); // ¸ğµç HTTP ¸Ş¼­µå Çã¿ë
+        config.addAllowedHeader("*"); // ¸ğµç Çì´õ Çã¿ë
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", config); // ëª¨ë“  ê²½ë¡œì— ëŒ€í•´ ì„¤ì • ì ìš©
+        source.registerCorsConfiguration("/**", config); // ¸ğµç °æ·Î¿¡ ´ëÇØ ¼³Á¤ Àû¿ë
 
         return source;
     }

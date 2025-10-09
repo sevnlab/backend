@@ -37,6 +37,16 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 }
 
+tasks.withType(JavaCompile) {
+    // 👇 Java 소스 파일은 MS949 (x-windows-949) 로 컴파일
+    options.encoding = 'MS949'
+}
+
+// 👇 리소스 파일(application.yml, properties 등)은 UTF-8로 인식
+tasks.withType(ProcessResources).configureEach {
+    filteringCharset = 'UTF-8'
+}
+
 tasks.named('test') {
     useJUnitPlatform()
 }

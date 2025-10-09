@@ -6,6 +6,8 @@ server:
 
 logging:
   level:
+#    org.hibernate.SQL: debug // 쿼리 확인가능
+#    org.hibernate.type.descriptor.sql: trace // 쿼리 확인가능
     root: INFO
     org.springframework: DEBUG
     com.example: TRACE
@@ -26,11 +28,11 @@ spring:
       idle-timeout: 600000         # 유휴 상태 유지 시간 (ms)
       max-lifetime: 1800000        # 커넥션 최대 수명 (ms)
 
-  jpa:
-    show-sql: true
-    hibernate:
-      ddl-auto: none
-    properties:
-      hibernate:
-        show_sql: true
-        format_sql: true
+#  jpa:
+#    show-sql: true
+#    hibernate:
+#      ddl-auto: none
+#    properties:
+#      hibernate:
+#        show_sql: true
+#        format_sql: true
