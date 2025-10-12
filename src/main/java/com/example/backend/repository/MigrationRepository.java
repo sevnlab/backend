@@ -14,20 +14,39 @@ public class MigrationRepository {
     @PersistenceContext
     private EntityManager em;
 
+    /**
+     *
+     */
+    private static final String SQL_UPDATE = """
+        UPDATE ASYNC_TEST
+           SET SALE_AMT = AMT,
+               PROMOTION_AMT = 0
+         WHERE ROWID IN (:pkList)
+    """;
+
     public void bulkUpdateByPkList(List<String> pkList) {
         if (pkList == null || pkList.isEmpty()) return;
-
-        String sql = """
-            UPDATE ASYNC_TEST
-               SET SALE_AMT = AMT,
-                   PROMOTION_AMT = 0
-             WHERE ROWID IN (:pkList)
-            """;
-
-        int updated = em.createNativeQuery(sql)
-                .setParameter("pkList", pkList)
-                .executeUpdate();
-
+        var query = em.createNativeQuery(SQL_UPDATE);
+        query.setParameter("pkList", pkList);
+        int updated = query.executeUpdate();
         log.debug("업데이트 완료: {}건", updated);
     }
+
+//    public void bulkUpdateByPkList(List<String> pkList) {
+
+//        if (pkList == null || pkList.isEmpty()) return;
+//
+//        String sql = """
+//            UPDATE ASYNC_TEST
+//               SET SALE_AMT = AMT,
+//                   PROMOTION_AMT = 0
+//             WHERE ROWID IN (:pkList)
+//            """;
+//
+//        int updated = em.createNativeQuery(sql)
+//                .setParameter("pkList", pkList)
+//                .executeUpdate();
+//
+//        log.debug("업데이트 완료: {}건", updated);
+//    }
 }
