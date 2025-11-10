@@ -22,7 +22,7 @@ public class UserService implements UserDetailsService {
     @Autowired
     private UserRepository userRepository;
 
-    // ìƒì„±ì ì£¼ì…
+    // »ı¼ºÀÚ ÁÖÀÔ
     @Autowired
     public UserService(SignUpRepository signUpRepository, PasswordEncoder passwordEncoder) {
         this.signUpRepository = signUpRepository;
@@ -31,25 +31,25 @@ public class UserService implements UserDetailsService {
 
     @Transactional
     public void signUp(Users users) {
-        // ë„¤ì´ë²„ ë¡œê·¸ì¸ ì‚¬ìš©ìëŠ” ë¹„ë°€ë²ˆí˜¸ë¥¼ ì„¤ì •í•˜ì§€ ì•ŠìŒ
+        // ³×ÀÌ¹ö ·Î±×ÀÎ »ç¿ëÀÚ´Â ºñ¹Ğ¹øÈ£¸¦ ¼³Á¤ÇÏÁö ¾ÊÀ½
         if (!users.isSocialLogin()) {
-            users.setPassword(passwordEncoder.encode(users.getPassword())); // ë¹„ë°€ë²ˆí˜¸ë¥¼ ì•”í˜¸í™”í•´ì„œ ì €ì¥
+            users.setPassword(passwordEncoder.encode(users.getPassword())); // ºñ¹Ğ¹øÈ£¸¦ ¾ÏÈ£È­ÇØ¼­ ÀúÀå
         }
         signUpRepository.save(users);
     }
 
-    // userIdë¡œ ì‚¬ìš©ì ì¡°íšŒ
+    // userId·Î »ç¿ëÀÚ Á¶È¸
     public Users findByUserId(String userId) {
         return userRepository.findByUserId(userId);
     }
 
     @Override
     public UserDetails loadUserByUsername(String userId) throws UsernameNotFoundException {
-        // DBì—ì„œ userIdë¡œ ì‚¬ìš©ì ì •ë³´ ì¡°íšŒ
+        // DB¿¡¼­ userId·Î »ç¿ëÀÚ Á¤º¸ Á¶È¸
         Users user = signUpRepository.findByUserId(userId)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with id: " + userId));
 
-        // ì‚¬ìš©ì ì •ë³´ë¥¼ UserDetails ê°ì²´ë¡œ ë³€í™˜í•˜ì—¬ ë°˜í™˜
+        // »ç¿ëÀÚ Á¤º¸¸¦ UserDetails °´Ã¼·Î º¯È¯ÇÏ¿© ¹İÈ¯
         return new org.springframework.security.core.userdetails.User(
                 user.getUserId(),
                 user.getPassword(),

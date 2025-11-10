@@ -1,7 +1,7 @@
 //package com.example.backend.service;
 //
 //import com.example.backend.dto.Users;
-//import org.springframework.security.core.GrantedAã…ã„¹ã…‡ã„´ã„¹ã…‡ã„´ã„¹ã„´uthority;
+//import org.springframework.security.core.GrantedA¤±¤©¤·¤¤¤©¤·¤¤¤©¤¤uthority;
 //import org.springframework.security.core.authority.SimpleGrantedAuthority;
 //import org.springframework.security.core.userdetails.UserDetails;
 //
@@ -18,7 +18,7 @@
 //
 //    @Override
 //    public Collection<? extends GrantedAuthority> getAuthorities() {
-//        // ì˜ˆì‹œë¡œ ëª¨ë“  ì‚¬ìš©ìê°€ USER ê¶Œí•œì„ ê°€ì§„ë‹¤ê³  ê°€ì •
+//        // ¿¹½Ã·Î ¸ğµç »ç¿ëÀÚ°¡ USER ±ÇÇÑÀ» °¡Áø´Ù°í °¡Á¤
 //        return Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"));
 //    }
 //

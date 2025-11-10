@@ -25,7 +25,7 @@ import java.util.Map;
 import java.util.UUID;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:3000") // í•´ë‹¹ ì˜¤ë¦¬ì§„ì—ì„œì˜ ìš”ì²­ì„ í—ˆìš©
+@CrossOrigin(origins = "http://localhost:3000") // ÇØ´ç ¿À¸®Áø¿¡¼­ÀÇ ¿äÃ»À» Çã¿ë
 public class UserController {
 
     @Autowired
@@ -37,7 +37,7 @@ public class UserController {
     @Autowired
     private JwtTokenProvider jwtTokenProvider;
 
-    // application.propertiesì— ì •ì˜ëœ ê°’ë“¤ì„ ì£¼ì…ë°›ìŒ
+    // application.properties¿¡ Á¤ÀÇµÈ °ªµéÀ» ÁÖÀÔ¹ŞÀ½
     @Value("${spring.security.oauth2.client.registration.naver.client-id}")
     private String naverClientId;
 
@@ -53,16 +53,16 @@ public class UserController {
     @Value("${spring.security.oauth2.client.registration.kakao.redirect-uri}")
     private String kakaoRedirectUri;
 
-    // íšŒì›ê°€ì… ê¸°ëŠ¥
+    // È¸¿ø°¡ÀÔ ±â´É
     @PostMapping("/signUp")
     public ResponseEntity<String> signUp(@RequestBody Users user) {
         System.out.println("user ======" + user.toString());
 
         userService.signUp(user);
-        return ResponseEntity.ok("íšŒì›ê°€ì…ì´ ì™„ë£Œë˜ì—ˆìŠµë‹ˆë‹¤.");
+        return ResponseEntity.ok("È¸¿ø°¡ÀÔÀÌ ¿Ï·áµÇ¾ú½À´Ï´Ù.");
     }
 
-    // ë¡œê·¸ì¸ ê¸°ëŠ¥
+    // ·Î±×ÀÎ ±â´É
     @PostMapping("/signIn")
     public ResponseEntity<?> signIn(@RequestBody Login.req req) {
         System.out.println("user ======" + req.toString());
@@ -72,14 +72,14 @@ public class UserController {
                     new UsernamePasswordAuthenticationToken(req.getUserId(), req.getPassword())
             );
 
-            String token = jwtTokenProvider.generateToken(authentication, "regular"); // ì¼ë°˜ë¡œê·¸ì¸
+            String token = jwtTokenProvider.generateToken(authentication, "regular"); // ÀÏ¹İ·Î±×ÀÎ
             return ResponseEntity.ok(new Login.res(token));
         } catch (BadCredentialsException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("ë¡œê·¸ì¸ ì‹¤íŒ¨: ì•„ì´ë”” ë˜ëŠ” ë¹„ë°€ë²ˆí˜¸ê°€ ì¼ì¹˜í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("·Î±×ÀÎ ½ÇÆĞ: ¾ÆÀÌµğ ¶Ç´Â ºñ¹Ğ¹øÈ£°¡ ÀÏÄ¡ÇÏÁö ¾Ê½À´Ï´Ù.");
         }
     }
 
-    // ë„¤ì´ë²„ ë¡œê·¸ì¸
+    // ³×ÀÌ¹ö ·Î±×ÀÎ
     @GetMapping("/oauth/naver")
     public ResponseEntity<?> redirectNaverLogin() {
         String state = UUID.randomUUID().toString();
@@ -88,7 +88,7 @@ public class UserController {
                 + naverClientId + "&redirect_uri=" + URLEncoder.encode(naverRedirectUri, StandardCharsets.UTF_8)
                 + "&state=" + state;
 
-        // properties íŒŒì¼ì—ì„œ ê°€ì ¸ì˜¨ clientIdì™€ redirectUrië¡œ URL ìƒì„±
+        // properties ÆÄÀÏ¿¡¼­ °¡Á®¿Â clientId¿Í redirectUri·Î URL »ı¼º
 //        String naverUrl = "https://nid.naver.com/oauth2.0/authorize?response_type=code&client_id="
 //                + naverClientId + "&redirect_uri=" + URLEncoder.encode(naverRedirectUri, StandardCharsets.UTF_8)
 //                + "&state=" + state;
@@ -103,8 +103,8 @@ public class UserController {
 
     @GetMapping("/oauth2/callback/naver")
     public ResponseEntity<?> handleNaverCallback2(@RequestParam String code, @RequestParam String state) {
-        System.out.println("íŒŒë¼ë¯¸í„° ì¡°íšŒ ==> " + code);
-        System.out.println("íŒŒë¼ë¯¸í„° ì¡°íšŒ ==> " + state);
+        System.out.println("ÆÄ¶ó¹ÌÅÍ Á¶È¸ ==> " + code);
+        System.out.println("ÆÄ¶ó¹ÌÅÍ Á¶È¸ ==> " + state);
 
         String tokenUrl = "https://nid.naver.com/oauth2.0/token?grant_type=authorization_code"
                 + "&client_id=" + naverClientId
@@ -112,22 +112,22 @@ public class UserController {
                 + "&code=" + code
                 + "&state=" + state;
 
-        // RestTemplateì„ ì´ìš©í•´ ì•¡ì„¸ìŠ¤ í† í° ìš”ì²­
+        // RestTemplateÀ» ÀÌ¿ëÇØ ¾×¼¼½º ÅäÅ« ¿äÃ»
         RestTemplate restTemplate = new RestTemplate();
         ResponseEntity<String> response = restTemplate.postForEntity(tokenUrl, null, String.class);
 
         if (response.getStatusCode() == HttpStatus.OK) {
-            // ì•¡ì„¸ìŠ¤ í† í° ì¶”ì¶œ
+            // ¾×¼¼½º ÅäÅ« ÃßÃâ
             String responseBody = response.getBody();
-            System.out.println("í† í° ì‘ë‹µ: " + responseBody);
+            System.out.println("ÅäÅ« ÀÀ´ä: " + responseBody);
 
             try {
                 ObjectMapper objectMapper = new ObjectMapper();
                 JsonNode tokenJson = objectMapper.readTree(responseBody);
                 String accessToken = tokenJson.get("access_token").asText();
-                System.out.println("ì•¡ì„¸ìŠ¤ í† í°: " + accessToken);
+                System.out.println("¾×¼¼½º ÅäÅ«: " + accessToken);
 
-                // ì•¡ì„¸ìŠ¤ í† í°ì„ ì´ìš©í•´ ì‚¬ìš©ì ì •ë³´ ìš”ì²­
+                // ¾×¼¼½º ÅäÅ«À» ÀÌ¿ëÇØ »ç¿ëÀÚ Á¤º¸ ¿äÃ»
                 HttpHeaders headers = new HttpHeaders();
                 headers.set("Authorization", "Bearer " + accessToken);
                 HttpEntity<String> entity = new HttpEntity<>(headers);
@@ -139,17 +139,17 @@ public class UserController {
                         String.class
                 );
 
-                // ì‚¬ìš©ì ì •ë³´ ì‘ë‹µ ì²˜ë¦¬
+                // »ç¿ëÀÚ Á¤º¸ ÀÀ´ä Ã³¸®
                 String userInfo = userInfoResponse.getBody();
                 JsonNode userInfoJson = objectMapper.readTree(userInfo);
 
-                // ì‚¬ìš©ì ID ê°€ì ¸ì˜¤ê¸°
+                // »ç¿ëÀÚ ID °¡Á®¿À±â
                 String userId = userInfoJson.get("response").get("id").asText();
 
-                // ì‚¬ìš©ì ì¡´ì¬ ì—¬ë¶€ í™•ì¸
+                // »ç¿ëÀÚ Á¸Àç ¿©ºÎ È®ÀÎ
                 Users existingUser = userService.findByUserId(userId);
                 if (existingUser == null) {
-                    // ë¯¸ê°€ì…ìë©´ íšŒì› ë“±ë¡ ì²˜ë¦¬
+                    // ¹Ì°¡ÀÔÀÚ¸é È¸¿ø µî·Ï Ã³¸®
                     String cleanBirthday = userInfoJson.get("response").get("birthday").asText().replace("-", "");
                     String cleanMobile = userInfoJson.get("response").get("mobile").asText().replace("-", "");
 
@@ -161,28 +161,28 @@ public class UserController {
                     newUser.setBIRTH(userInfoJson.get("response").get("birthyear").asText() + cleanBirthday);
                     newUser.setGENDER(userInfoJson.get("response").get("gender").asText());
 
-                    // ë„¤ì´ë²„ ë¡œê·¸ì¸ìœ¼ë¡œ ë“±ë¡ëœ ì‚¬ìš©ìì´ë¯€ë¡œ ë¹„ë°€ë²ˆí˜¸ë¥¼ ì„¤ì •í•˜ì§€ ì•ŠìŒ
+                    // ³×ÀÌ¹ö ·Î±×ÀÎÀ¸·Î µî·ÏµÈ »ç¿ëÀÚÀÌ¹Ç·Î ºñ¹Ğ¹øÈ£¸¦ ¼³Á¤ÇÏÁö ¾ÊÀ½
                     newUser.setSocialLogin(true);
 
-                    // íšŒì› ë“±ë¡
+                    // È¸¿ø µî·Ï
                     userService.signUp(newUser);
 
-                    // ìƒˆë¡œ ê°€ì…ëœ ì‚¬ìš©ìë¡œ ì¸ì¦ ìƒì„±
+                    // »õ·Î °¡ÀÔµÈ »ç¿ëÀÚ·Î ÀÎÁõ »ı¼º
                     existingUser = newUser;
                 }
 
-                // JWT í† í° ìƒì„± (ì¼ë°˜ ë¡œê·¸ì¸ê³¼ ë™ì¼)
+                // JWT ÅäÅ« »ı¼º (ÀÏ¹İ ·Î±×ÀÎ°ú µ¿ÀÏ)
                 Authentication authentication = new UsernamePasswordAuthenticationToken(existingUser, null, new ArrayList<>());
                 String token = jwtTokenProvider.generateToken(authentication, "naver");
 
-                // í† í°ì„ í´ë¼ì´ì–¸íŠ¸ì—ê²Œ ì‘ë‹µìœ¼ë¡œ ë³´ëƒ„
+                // ÅäÅ«À» Å¬¶óÀÌ¾ğÆ®¿¡°Ô ÀÀ´äÀ¸·Î º¸³¿
 
                 System.out.println(ResponseEntity.ok(Map.of("token", token)));
                 return ResponseEntity.status(HttpStatus.FOUND)
                         .header(HttpHeaders.LOCATION, "http://localhost:3000/oauth2/callback/naver?token=" + token)
                         .build();
 
-//                return ResponseEntity.ok(Map.of("token", token));  // ë‹¨ìˆœ JSON ì‘ë‹µ
+//                return ResponseEntity.ok(Map.of("token", token));  // ´Ü¼ø JSON ÀÀ´ä
 
 //                return ResponseEntity.status(HttpStatus.FOUND)
 //                        .header(HttpHeaders.LOCATION, "http://localhost:3000/oauth2/callback/naver?token=" + token)
@@ -190,22 +190,22 @@ public class UserController {
 
 //                return ResponseEntity.ok(new Login.res(token));
 
-//                return ResponseEntity.ok("ë„¤ì´ë²„ ë¡œê·¸ì¸ ì„±ê³µ")
+//                return ResponseEntity.ok("³×ÀÌ¹ö ·Î±×ÀÎ ¼º°ø")
 
             } catch (JsonProcessingException e) {
                 e.printStackTrace();
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("JSON ì²˜ë¦¬ ì˜¤ë¥˜ ë°œìƒ");
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("JSON Ã³¸® ¿À·ù ¹ß»ı");
             }
 
         } else {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("ë„¤ì´ë²„ ë¡œê·¸ì¸ ì‹¤íŒ¨");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("³×ÀÌ¹ö ·Î±×ÀÎ ½ÇÆĞ");
         }
     }
 
-    // ì¹´ì¹´ì˜¤ ë¡œê·¸ì¸
+    // Ä«Ä«¿À ·Î±×ÀÎ
     @GetMapping("/oauth/kakao")
     public ResponseEntity<?> redirectKakaoLogin() {
-        // properties íŒŒì¼ì—ì„œ ê°€ì ¸ì˜¨ clientIdì™€ redirectUrië¡œ URL ìƒì„±
+        // properties ÆÄÀÏ¿¡¼­ °¡Á®¿Â clientId¿Í redirectUri·Î URL »ı¼º
         String kakaoUrl = "https://kauth.kakao.com/oauth/authorize?response_type=code&client_id="
                 + kakaoClientId + "&redirect_uri=" + URLEncoder.encode(kakaoRedirectUri, StandardCharsets.UTF_8);
 
@@ -217,8 +217,8 @@ public class UserController {
 
     @GetMapping("/kakao/callback")
     public ResponseEntity<?> handleKakaoCallback(@RequestParam String code) {
-        // ì¹´ì¹´ì˜¤ í† í° ë°œê¸‰ ë° ì‚¬ìš©ì ì •ë³´ ìš”ì²­ ì²˜ë¦¬
-        // í† í° ë°œê¸‰ í›„ í´ë¼ì´ì–¸íŠ¸ë¡œ í•„ìš”í•œ ì •ë³´ë¥¼ ë¦¬í„´
-        return ResponseEntity.ok("ì¹´ì¹´ì˜¤ ë¡œê·¸ì¸ ì„±ê³µ");
+        // Ä«Ä«¿À ÅäÅ« ¹ß±Ş ¹× »ç¿ëÀÚ Á¤º¸ ¿äÃ» Ã³¸®
+        // ÅäÅ« ¹ß±Ş ÈÄ Å¬¶óÀÌ¾ğÆ®·Î ÇÊ¿äÇÑ Á¤º¸¸¦ ¸®ÅÏ
+        return ResponseEntity.ok("Ä«Ä«¿À ·Î±×ÀÎ ¼º°ø");
     }
 }

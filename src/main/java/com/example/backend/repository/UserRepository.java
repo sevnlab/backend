@@ -4,5 +4,5 @@ import com.example.backend.dto.Users;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface UserRepository extends JpaRepository<Users, Long> {
-    Users findByUserId(String userId);  // userIdë¡œ ì‚¬ìš©ì ì¡°íšŒ
+    Users findByUserId(String userId);  // userId·Î »ç¿ëÀÚ Á¶È¸
 }

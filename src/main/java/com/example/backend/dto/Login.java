@@ -24,7 +24,7 @@ public class Login {
     @Setter
     @ToString
     public static class res {
-        private String token; // JWT í† í°
+        private String token; // JWT ÅäÅ«
     }
 
 

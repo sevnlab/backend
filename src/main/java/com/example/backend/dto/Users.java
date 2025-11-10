@@ -13,7 +13,7 @@ import java.io.Serializable;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity // JPA ì—ì„œëŠ” Entity ë¥¼ ì‚¬ìš©í•¨ìœ¼ë¡œì¨ JPA ì—”í„°í‹°ë¡œ ê´€ë¦¬í•´ì•¼í•¨
+@Entity // JPA ¿¡¼­´Â Entity ¸¦ »ç¿ëÇÔÀ¸·Î½á JPA ¿£ÅÍÆ¼·Î °ü¸®ÇØ¾ßÇÔ
 @Table(name = "USERS") // Assuming the table is named 'users' in your database
 public class Users implements Serializable {
     @Serial
@@ -21,15 +21,15 @@ public class Users implements Serializable {
 
     @Id
     @Column(name = "USERID", nullable = false)
-    // ìœ íš¨ì„± ì¶”ê°€í• ê²ƒ @validatin
-//    @Pattern(regexp = "^[ã„±-ã…ê°€-í£a-z0-9-_]{2,10}$", message = "ë‹‰ë„¤ì„ì€ íŠ¹ìˆ˜ë¬¸ìë¥¼ ì œì™¸í•œ 2~10ìë¦¬ì—¬ì•¼ í•©ë‹ˆë‹¤.")
+    // À¯È¿¼º Ãß°¡ÇÒ°Í @validatin
+//    @Pattern(regexp = "^[¤¡-¤¾°¡-ÆRa-z0-9-_]{2,10}$", message = "´Ğ³×ÀÓÀº Æ¯¼ö¹®ÀÚ¸¦ Á¦¿ÜÇÑ 2~10ÀÚ¸®¿©¾ß ÇÕ´Ï´Ù.")
     private String userId;
 
     @Column(name = "EMAIL", nullable = false)
     private String email;
 
     @Column(name = "PASSWORD", nullable = true)
-    private String password; // ë¹„ë²ˆì€ ë‚˜ì¤‘ì— í•´ì‹œí‚¤ë¡œ ì €ì¥í•´ì•¼í•¨
+    private String password; // ºñ¹øÀº ³ªÁß¿¡ ÇØ½ÃÅ°·Î ÀúÀåÇØ¾ßÇÔ
 
     @Column(name = "NAME", nullable = true)
     private String name;

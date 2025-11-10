@@ -1,4 +1,7 @@
-# 프로젝트 기본 인코딩 x-windows-949  
+# 사용중인 포트의 PID 확인(macOs) : lsof -i :7777
+# 포트 죽이기 kill -9 PID
+
+# 프로젝트 기본 인코딩 x-windows-949
 # 설정파일만 UTF-8 로 지정
 
 server:
@@ -6,19 +9,22 @@ server:
 
 logging:
   level:
-#    org.hibernate.SQL: debug // 쿼리 확인가능
-#    org.hibernate.type.descriptor.sql: trace // 쿼리 확인가능
-    root: INFO
-    org.springframework: DEBUG
-    com.example: TRACE
-    com.zaxxer.hikari: DEBUG
+      root: INFO                     # 전체 로그 기본값
+      org.springframework: INFO       # Spring MVC 등 핵심만
+      org.hibernate.SQL: DEBUG        # ✅ 실행되는 SQL 로그 표시
+      org.hibernate.type.descriptor.sql: TRACE  # ✅ SQL 파라미터 값 표시
+      org.hibernate: WARN             # 나머지 Hibernate 내부 로그 억제
+      com.zaxxer.hikari: WARN         # 커넥션풀 상태 로그 제거
+      com.example: DEBUG              # 내 서비스 코드만 디버그로 유지
+  pattern:
+    console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
 
 spring:
   datasource:
     driver-class-name: oracle.jdbc.OracleDriver
-    url: jdbc:oracle:thin:@//localhost:1521/ORCL
-    username: SQLP
-    password: SQLP2
+    url: jdbc:oracle:thin:@localhost:1521:XE
+    username: seven
+    password: seven
 
     # 기본 커넥션풀 설정
     hikari:

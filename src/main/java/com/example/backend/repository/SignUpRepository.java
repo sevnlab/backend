@@ -8,10 +8,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 
 
-//JpaRepository<[ì‚¬ìš©ì ê°ì²´], [ì‚¬ìš©ì í…Œì´ë¸” ê¸°ë³¸í‚¤ì˜ ë°ì´í„° íƒ€ì…]>ì„ ì¶”ê°€í•©ë‹ˆë‹¤.
-//JpaRepositoryê°€ ë“¤ì–´ê°€ìˆìœ¼ë©´ ë‹¨ìˆœí•œ CRUD(Create, Read, Update, Delete)ëŠ” ì²˜ë¦¬ê°€ ê°€ëŠ¥í•©ë‹ˆë‹¤.
+//JpaRepository<[»ç¿ëÀÚ °´Ã¼], [»ç¿ëÀÚ Å×ÀÌºí ±âº»Å°ÀÇ µ¥ÀÌÅÍ Å¸ÀÔ]>À» Ãß°¡ÇÕ´Ï´Ù.
+//JpaRepository°¡ µé¾î°¡ÀÖÀ¸¸é ´Ü¼øÇÑ CRUD(Create, Read, Update, Delete)´Â Ã³¸®°¡ °¡´ÉÇÕ´Ï´Ù.
 public interface SignUpRepository extends JpaRepository<Users, String> {
 
-    // userIdë¡œ ì‚¬ìš©ì ê²€ìƒ‰
+    // userId·Î »ç¿ëÀÚ °Ë»ö
     Optional<Users> findByUserId(String userId);
 }

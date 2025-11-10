@@ -18,19 +18,25 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-//                .cors(cors -> cors.disable()) // CORS í™œì„±í™”
-                .csrf(csrf -> csrf.disable()) // CSRF ë¹„í™œì„±í™”
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // ì„¸ì…˜ ë¹„í™œì„±í™”
+//                .cors(cors -> cors.disable()) // CORS È°¼ºÈ­
+                .csrf(csrf -> csrf.disable()) // CSRF ºñÈ°¼ºÈ­ (POST ¿äÃ» Çã¿ë)
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // ¼¼¼Ç ºñÈ°¼ºÈ­
+
+                // ¿äÃ»º° ±ÇÇÑ ¼³Á¤
                 .authorizeHttpRequests(auth -> auth
-                        // ì¸ì¦ ì—†ì´ ì ‘ê·¼ ê°€ëŠ¥í•œ ê²½ë¡œ ì„¤ì •
+                        // ÀÎÁõ ¾øÀÌ Á¢±Ù °¡´ÉÇÑ °æ·Î ¼³Á¤
                         .requestMatchers("/signIn", "/signUp", "/oauth/kakao", "/oauth/naver", "/oauth2/callback/naver"
 //                                ,
 //                                "/oauth2/callback/naver", "/favicon.ico", "/error"
-                        ).permitAll() // í•´ë‹¹ ê²½ë¡œ ì¸ì¦ ì œì™¸
-                        .anyRequest().authenticated() // ë‚˜ë¨¸ì§€ ëª¨ë“  ìš”ì²­ì€ ì¸ì¦ í•„ìš”
+                        ).permitAll() // ÇØ´ç °æ·Î ÀÎÁõ Á¦¿Ü
+
+                        // Å×½ºÆ® ÁßÀÎ Account API ÀüºÎ Çã¿ë
+                        .requestMatchers("/account/**").permitAll()
+
+                        .anyRequest().authenticated() // ±× ¿Ü ³ª¸ÓÁö ¸ğµç ¿äÃ»Àº ÀÎÁõ ÇÊ¿ä
                 );
 
-        // JwtAuthenticationFilter ë“±ì„ ì¶”ê°€í•˜ë ¤ë©´ ì—¬ê¸°ì— ì¶”ê°€
+        // JwtAuthenticationFilter µîÀ» Ãß°¡ÇÏ·Á¸é ¿©±â¿¡ Ãß°¡
         // http.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
@@ -43,6 +49,6 @@ public class SecurityConfig {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder(); // BCrypt ì•”í˜¸í™” ë°©ì‹ ì‚¬ìš©
+        return new BCryptPasswordEncoder(); // BCrypt ¾ÏÈ£È­ ¹æ½Ä »ç¿ë
     }
 }

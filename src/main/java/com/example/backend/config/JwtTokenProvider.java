@@ -19,10 +19,10 @@ public class JwtTokenProvider {
     @Value("${jwt.expiration}")
     private int jwtExpirationMs;
 
-    // JWT ìƒì„± ë©”ì„œë“œ
+    // JWT »ı¼º ¸Ş¼­µå
     public String generateToken(Authentication authentication, String loginType) {
-        System.out.println("í…ŒìŠ¤íŠ¸000");
-        System.out.println("í…ŒìŠ¤íŠ¸111" + authentication.getName());
+        System.out.println("Å×½ºÆ®000");
+        System.out.println("Å×½ºÆ®111" + authentication.getName());
 
         String username = authentication.getName();
         Date now = new Date();
@@ -32,7 +32,7 @@ public class JwtTokenProvider {
         System.out.println("Secret Key Length: " + jwtSecret.length());
 
         try {
-            // ë¬¸ìì—´ì„ ë°”ì´íŠ¸ ë°°ì—´ë¡œ ë³€í™˜í•˜ì—¬ ì‚¬ìš©
+            // ¹®ÀÚ¿­À» ¹ÙÀÌÆ® ¹è¿­·Î º¯È¯ÇÏ¿© »ç¿ë
             byte[] secretKeyBytes = jwtSecret.getBytes("UTF-8");
 
             return Jwts.builder()
@@ -43,18 +43,18 @@ public class JwtTokenProvider {
                     .signWith(SignatureAlgorithm.HS512, secretKeyBytes)
                     .compact();
         } catch (UnsupportedEncodingException e) {
-            // ì˜ˆì™¸ ì²˜ë¦¬ (ë¡œê·¸ë¥¼ ë‚¨ê¸°ê±°ë‚˜ ì˜ˆì™¸ë¥¼ ë˜ì§ˆ ìˆ˜ ìˆìŒ)
-            throw new RuntimeException("UTF-8 ì¸ì½”ë”©ì„ ì§€ì›í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.", e);
+            // ¿¹¿Ü Ã³¸® (·Î±×¸¦ ³²±â°Å³ª ¿¹¿Ü¸¦ ´øÁú ¼ö ÀÖÀ½)
+            throw new RuntimeException("UTF-8 ÀÎÄÚµùÀ» Áö¿øÇÏÁö ¾Ê½À´Ï´Ù.", e);
         }
 
     }
 
-    // JWTì—ì„œ ì‚¬ìš©ì ì´ë¦„ ì¶”ì¶œ
+    // JWT¿¡¼­ »ç¿ëÀÚ ÀÌ¸§ ÃßÃâ
     public String getUsernameFromJWT(String token) {
         return Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token).getBody().getSubject();
     }
 
-    // JWT ìœ íš¨ì„± ê²€ì¦
+    // JWT À¯È¿¼º °ËÁõ
     public boolean validateToken(String token) {
         try {
             Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token);
