@@ -26,7 +26,7 @@ dependencies {
     implementation 'org.jetbrains:annotations:24.0.0'
 
     // 소스 변경할 때마다 서버 재시작해서 확인하는 게 번거로울 때  spring-boot-devtools 의존성 추가하기
-    developmentOnly("org.springframework.boot:spring-boot-devtools")
+//    developmentOnly("org.springframework.boot:spring-boot-devtools")
 
     implementation 'org.springframework.boot:spring-boot-starter-web'
     compileOnly 'org.projectlombok:lombok'
@@ -53,6 +53,11 @@ dependencies {
     // spring security 의존성 추가
     implementation 'org.springframework.boot:spring-boot-starter-security'
     testImplementation 'org.springframework.security:spring-security-test'
+
+    // 레디스 추가
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis' // 레디스 기본 기능 (RedisTemplate, 캐시, pub/sub), application.yml 직접 설정을 지원하지 않는다.
+    implementation 'org.redisson:redisson-spring-boot-starter:3.27.2'  // // 고급 기능 (분산락, RateLimiter, BloomFilter 등), RedissonClient 주입
+
 }
 
 // 소스 변경할 때마다 서버 재시작해서 확인하는 게 번거로울 때  spring-boot-devtools 의존성 추가하기

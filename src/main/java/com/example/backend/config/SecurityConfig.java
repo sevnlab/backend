@@ -30,8 +30,9 @@ public class SecurityConfig {
 //                                "/oauth2/callback/naver", "/favicon.ico", "/error"
                         ).permitAll() // 해당 경로 인증 제외
 
-                        // 테스트 중인 Account API 전부 허용
-                        .requestMatchers("/account/**").permitAll()
+                        // 테스트 중인 컨트롤러 API 전부 허용
+                        .requestMatchers("/account/**").permitAll()  // 비동기 테스트 
+                        .requestMatchers("/redis/**").permitAll() // 레디스 테스트
 
                         .anyRequest().authenticated() // 그 외 나머지 모든 요청은 인증 필요
                 );
