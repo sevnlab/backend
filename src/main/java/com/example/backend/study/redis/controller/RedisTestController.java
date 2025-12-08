@@ -1,7 +1,8 @@
-package com.example.backend.controller;
+package com.example.backend.study.redis.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.redisson.api.*;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,12 +18,24 @@ public class RedisTestController {
 
     private final StringRedisTemplate stringRedisTemplate;
     private final RedissonClient redissonClient;
+    private final RedisTemplate redisTemplate;
+
+    //
+    @GetMapping("/json")
+    public String setJson(
+            @RequestParam String key,
+            @RequestParam String value
+    ) {
+        redisTemplate.opsForValue().set(key, value);
+        return "JSON stored: " + key + "=" + value;
+    }
+
 
     // 1) 기본 get/set 테스트
     @GetMapping("/test")
     public String test() {
-        stringRedisTemplate.opsForValue().set("hello", "world");
-        return stringRedisTemplate.opsForValue().get("hello");
+        stringRedisTemplate.opsForValue().set("hello33", "world11");
+        return stringRedisTemplate.opsForValue().get("hello33");
     }
 
     @GetMapping("/get")

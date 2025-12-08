@@ -24,6 +24,9 @@ spring:
     redisson:
       file: classpath:redisson.yml
 
+  cache:
+    type: redis   # 스프링 캐시 저장소
+
   # Spring Data Redis 설정 (템블릿/캐싱 사용)
   data:
     redis:
