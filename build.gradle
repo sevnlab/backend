@@ -1,20 +1,15 @@
 plugins {
     id 'java'
-    id 'war'
-    id 'org.springframework.boot' version '3.1.3'
-    id 'io.spring.dependency-management' version '1.1.3'
+    id 'org.springframework.boot' version '3.5.6'
+    id 'io.spring.dependency-management' version '1.1.6'
 }
 
 group = 'com.example'
 version = '0.0.1-SNAPSHOT'
 
 java {
-    sourceCompatibility = '17'
-}
-
-configurations {
-    compileOnly {
-        extendsFrom annotationProcessor
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
     }
 }
 
@@ -23,56 +18,54 @@ repositories {
 }
 
 dependencies {
-    implementation 'org.jetbrains:annotations:24.0.0'
 
-    // 소스 변경할 때마다 서버 재시작해서 확인하는 게 번거로울 때  spring-boot-devtools 의존성 추가하기
-//    developmentOnly("org.springframework.boot:spring-boot-devtools")
-
+    /* ===============================
+       Spring Boot 기본
+    =============================== */
     implementation 'org.springframework.boot:spring-boot-starter-web'
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
-    providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
-    // jdk17 이상 ojdbc11 권장
+    /* ===============================
+       JPA + Oracle
+    =============================== */
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'com.oracle.database.jdbc:ojdbc11:23.3.0.23.09'
 
-    // jpa 관련 라이브러리
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-    implementation 'com.oracle.database.jdbc:ojdbc8:19.3.0.0'
-
-    // JWT 발급을 위해 추가
-    implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
-    implementation 'io.jsonwebtoken:jjwt-impl:0.11.5'
-    implementation 'io.jsonwebtoken:jjwt-jackson:0.11.5'
-
-    // Jackson 라이브러리
-    implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.0'  // 최신 버전으로 설정
-
-    // spring security 의존성 추가
+    /* ===============================
+       Security + JWT
+    =============================== */
     implementation 'org.springframework.boot:spring-boot-starter-security'
     testImplementation 'org.springframework.security:spring-security-test'
 
-    // 레디스 추가
-    implementation 'org.springframework.boot:spring-boot-starter-data-redis' // 레디스 기본 기능 (RedisTemplate, 캐시, pub/sub), application.yml 직접 설정을 지원하지 않는다.
-    implementation 'org.redisson:redisson-spring-boot-starter:3.27.2'  // // 고급 기능 (분산락, RateLimiter, BloomFilter 등), RedissonClient 주입
+    implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
 
+    /* ===============================
+       Redis
+    =============================== */
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+    implementation 'org.redisson:redisson-spring-boot-starter:3.27.2'
+
+    /* ===============================
+       Lombok
+    =============================== */
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+
+    /* ===============================
+       기타
+    =============================== */
+    implementation 'org.jetbrains:annotations:24.0.0'
 }
 
-// 소스 변경할 때마다 서버 재시작해서 확인하는 게 번거로울 때  spring-boot-devtools 의존성 추가하기
-configurations {
-    developmentOnly
-    runtimeClasspath {
-        extendsFrom developmentOnly
-    }
-}
-
-tasks.withType(JavaCompile) {
-    // 👇 Java 소스 파일은 MS949 (x-windows-949) 로 컴파일
+/* ===============================
+   Encoding 설정
+=============================== */
+tasks.withType(JavaCompile).configureEach {
     options.encoding = 'MS949'
 }
 
-// 👇 리소스 파일(application.yml, properties 등)은 UTF-8로 인식
 tasks.withType(ProcessResources).configureEach {
     filteringCharset = 'UTF-8'
 }
