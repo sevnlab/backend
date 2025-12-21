@@ -13,8 +13,8 @@ public class RedisCacheController {
     private final RedisCacheService service;
 
     @PostMapping("/cacheable")
-    public RedisCacheUser getUser(Long id) {
-        return service.getUser(id);
+    public RedisCacheUser getUser(String name) {
+        return service.getUser(name);
     }
 
     @PostMapping("/cacheput")
@@ -23,7 +23,7 @@ public class RedisCacheController {
     }
 
     @PostMapping("/cacheEvict")
-    public void delete(@RequestParam Long id) {
-        service.deleteUser(id);
+    public void delete(@RequestParam String name) {
+        service.deleteUser(name);
     }
 }

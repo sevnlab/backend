@@ -6,10 +6,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
+import java.io.Serializable;
 
 @Entity
-@Table(name = "users")
+@Table(name = "USERS")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -24,5 +24,6 @@ public class RedisCacheUser {
     private Integer age;
     private String email;
 
-    private LocalDateTime createdAt;
+    @Column(name = "CREATED_AT")
+    private String createdAt;
 }

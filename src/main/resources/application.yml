@@ -11,6 +11,7 @@ logging:
   level:
       root: INFO                     # 전체 로그 기본값
       org.springframework: INFO       # Spring MVC 등 핵심만
+      org.springframework.cache: DEBUG # 캐시 hit/miss 를 로그로 남김
       org.hibernate.SQL: DEBUG        # ✅ 실행되는 SQL 로그 표시
       org.hibernate.type.descriptor.sql: TRACE  # ✅ SQL 파라미터 값 표시
       org.hibernate: WARN             # 나머지 Hibernate 내부 로그 억제
