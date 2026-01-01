@@ -1,5 +1,7 @@
 package com.example.backend.study.redis.config;
 
+import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
@@ -8,8 +10,25 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
+
+/**
+ * RedisTemplate 직접 사용을 위한 Redis 설정
+ * RedisTemplate을 직접 주입받아 Redis를 수동으로 조작할 때 사용
+ */
 @Configuration
+@RequiredArgsConstructor
 public class RedisConfig {
+    private final RedisConnectionFactory redisConnectionFactory;
+
+    /**
+     * 애플리케이션 실행시 레디스에 저장된 데이터 전부 초기화, 운영환경시에는 주석처리 (개발시에만 사용)
+     */
+    @PostConstruct
+    public void clearRedisOnStartup() {
+        redisConnectionFactory.getConnection()
+            .serverCommands()
+            .flushDb();
+    }
 
     /**
      * ? 문자열 전용 템플릿

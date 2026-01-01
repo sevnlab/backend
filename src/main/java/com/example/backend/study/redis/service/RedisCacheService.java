@@ -3,6 +3,7 @@ package com.example.backend.study.redis.service;
 import com.example.backend.study.redis.entity.RedisCacheUser;
 import com.example.backend.study.redis.repository.RedisCacheRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
@@ -10,15 +11,16 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class RedisCacheService {
 
     private final RedisCacheRepository userRepository;
 
     @Cacheable(value = "userCache", key = "#name", unless = "#result == null")
     public RedisCacheUser getUser(String name) {
-        return userRepository.findByName(name).orElse(null);
-//        return userRepository.findByName(name)
-//                .orElseThrow(() -> new RuntimeException("NOT FOUND"));
+//        return userRepository.findByName(name).orElse(null);
+        return userRepository.findByName(name)
+                .orElseThrow(() -> new RuntimeException("NOT FOUND"));
     }
 
     @CachePut(value = "userCache", key = "#user.name")

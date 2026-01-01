@@ -31,7 +31,7 @@ public class RedisTestController {
     }
 
 
-    // 1) ê¸°ë³¸ get/set í…ŒìŠ¤íŠ¸
+    // 1) ±âº» get/set Å×½ºÆ®
     @GetMapping("/test")
     public String test() {
         stringRedisTemplate.opsForValue().set("hello33", "world11");
@@ -43,14 +43,14 @@ public class RedisTestController {
         return stringRedisTemplate.opsForValue().get("hello");
     }
 
-    // 2) Cluster ë¼ìš°íŒ… ì •ìƒ í™•ì¸
+    // 2) Cluster ¶ó¿ìÆÃ Á¤»ó È®ÀÎ
     @GetMapping("/cluster/hash")
     public String clusterHashTest(@RequestParam String key) {
         stringRedisTemplate.opsForValue().set(key, "value-" + key);
         return "Saved at cluster slot of key=" + key;
     }
 
-    // 3) Redisson ê¸°ë³¸ ë™ì‘
+    // 3) Redisson ±âº» µ¿ÀÛ
     @GetMapping("/redisson/basic")
     public String redissonBasic() {
         RBucket<String> bucket = redissonClient.getBucket("rds:bucket");
@@ -59,14 +59,14 @@ public class RedisTestController {
     }
 
 
-    // 4) ë¶„ì‚°ë½ í…ŒìŠ¤íŠ¸
+    // 4) ºĞ»ê¶ô Å×½ºÆ®
     @GetMapping("/lock")
     public String lockTest() {
         RLock lock = redissonClient.getLock("my-lock");
 
         try {
             if (lock.tryLock(5, 10, TimeUnit.SECONDS)) {
-                Thread.sleep(3000); // 3ì´ˆ ì‘ì—…
+                Thread.sleep(3000); // 3ÃÊ ÀÛ¾÷
                 return "Locked and executed!";
             } else {
                 return "Another node is locking!";
@@ -89,7 +89,7 @@ public class RedisTestController {
     }
 
 
-    // 6) MapCache (TTL ìºì‹œ)
+    // 6) MapCache (TTL Ä³½Ã)
     @GetMapping("/cache")
     public String cacheTest() {
         RMapCache<String, String> cache = redissonClient.getMapCache("cache:map");
@@ -98,7 +98,7 @@ public class RedisTestController {
     }
 
 
-    // 7) AtomicLong í…ŒìŠ¤íŠ¸
+    // 7) AtomicLong Å×½ºÆ®
     @GetMapping("/counter")
     public String counter() {
         RAtomicLong counter = redissonClient.getAtomicLong("global:count");
@@ -107,12 +107,12 @@ public class RedisTestController {
     }
 
 
-    // 8) Bloom Filter í…ŒìŠ¤íŠ¸
+    // 8) Bloom Filter Å×½ºÆ®
     @GetMapping("/bloom")
     public String bloomTest(@RequestParam String key) {
         RBloomFilter<String> bloom = redissonClient.getBloomFilter("bloom:test");
 
-        bloom.tryInit(10000, 0.01); // ì˜ˆìƒ 1ë§Œê±´, ì˜¤ì°¨ 1%
+        bloom.tryInit(10000, 0.01); // ¿¹»ó 1¸¸°Ç, ¿ÀÂ÷ 1%
 
         boolean added = bloom.add(key);
         boolean exists = bloom.contains(key);

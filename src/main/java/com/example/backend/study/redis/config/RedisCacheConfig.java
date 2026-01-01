@@ -11,6 +11,9 @@ import org.springframework.data.redis.serializer.RedisSerializationContext;
 
 import java.time.Duration;
 
+/**
+ *
+ */
 @Configuration
 @EnableCaching
 public class RedisCacheConfig {
@@ -20,7 +23,7 @@ public class RedisCacheConfig {
 
         RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig()
                 .entryTtl(Duration.ofMinutes(5))   // 기본 캐시 TTL
-                .disableCachingNullValues()
+                .disableCachingNullValues() // null 값 저장 안함
                 .serializeValuesWith(
                         RedisSerializationContext.SerializationPair.fromSerializer(
                                 new GenericJackson2JsonRedisSerializer()
