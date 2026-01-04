@@ -61,7 +61,7 @@ public class ItemController {
         return resolveCacheHandler(cacheStrategy).update(itemId, request);
     }
 
-    @PostMapping("/cache-strategy/{cacheStrategy}/items/{itemId}")
+    @DeleteMapping("/cache-strategy/{cacheStrategy}/items/{itemId}")
     public void delete(
             @PathVariable CacheStrategy cacheStrategy,
             @PathVariable Long itemId

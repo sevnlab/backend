@@ -1,0 +1,10 @@
+# Redisson 설정 (분산락/고급 기능)
+clusterServersConfig:
+  nodeAddresses:
+    - redis://192.168.87.128:7001
+    - redis://192.168.87.130:7002
+    - redis://192.168.87.131:7003
+    - redis://192.168.87.132:7004
+    - redis://192.168.87.133:7005
+    - redis://192.168.87.134:7006
+  password: seven
