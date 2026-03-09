@@ -10,8 +10,3 @@ public class CorsConfig {
         return new CustomCorsFilter();
     }
 }
-
-
-
-
-

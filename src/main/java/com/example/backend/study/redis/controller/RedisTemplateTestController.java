@@ -20,7 +20,7 @@ public class RedisTemplateTestController {
     private final RedisTemplate<String, Object> redisTemplate;
 
     /** -----------------------------
-     * 1) Hash ±¸Á¶ ÀúÀå
+     * 1) Hash êµ¬ì¡° ì €ìž¥
      * ----------------------------- */
     @GetMapping("/hash/set")
     public String hashSet(@RequestParam String key,
@@ -45,7 +45,7 @@ public class RedisTemplateTestController {
 
 
     /** -----------------------------
-     * 2) List ±¸Á¶
+     * 2) List êµ¬ì¡°
      * ----------------------------- */
     @GetMapping("/list/leftPush")
     public String listLeftPush(@RequestParam String key,
@@ -64,7 +64,7 @@ public class RedisTemplateTestController {
 
 
     /** -----------------------------
-     * 3) Set ±¸Á¶
+     * 3) Set êµ¬ì¡°
      * ----------------------------- */
     @GetMapping("/set/add")
     public String setAdd(@RequestParam String key,
@@ -81,7 +81,7 @@ public class RedisTemplateTestController {
 
 
     /** -----------------------------
-     * 4) ZSet ±¸Á¶ (Sorted Set)
+     * 4) ZSet êµ¬ì¡° (Sorted Set)
      * ----------------------------- */
     @GetMapping("/zset/add")
     public String zsetAdd(@RequestParam String key,

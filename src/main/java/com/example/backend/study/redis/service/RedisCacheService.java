@@ -32,7 +32,7 @@ public class RedisCacheService {
         entity.setAge(user.getAge());
         entity.setEmail(user.getEmail());
 
-        userRepository.save(entity); // ÀÌ °ªÀÌ Ä³½Ã¿¡ ´Ù½Ã ÀúÀåµÊ
+        userRepository.save(entity); // ì´ ê°’ì´ ìºì‹œì— ë‹¤ì‹œ ì €ì¥ë¨
 
         return entity;
     }

@@ -1,8 +1,8 @@
 package com.example.backend.repository;
 
-import com.example.backend.dto.Users;
+import com.example.backend.entity.Member;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface UserRepository extends JpaRepository<Users, Long> {
-    Users findByUserId(String userId);  // userId·Î »ç¿ëÀÚ Á¶È¸
+public interface UserRepository extends JpaRepository<Member, Long> {
+    Member findByMemberId(String memberId);  // userIdë¡œ ì‚¬ìš©ì ì¡°íšŒ
 }

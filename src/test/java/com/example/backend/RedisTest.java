@@ -7,7 +7,7 @@ public class RedisTest extends RedisTestContainerSupport {
 
     @Test
     void test1() {
-        // ¿¬°á Á¤º¸ Ãâ·Â
+        // ì—°ê²° ì •ë³´ ì¶œë ¥
         RedisConnectionFactory factory = redisTemplate.getConnectionFactory();
         System.out.println("Redis Connection: " + factory);
 

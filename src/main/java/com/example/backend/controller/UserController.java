@@ -2,7 +2,7 @@ package com.example.backend.controller;
 
 import com.example.backend.config.JwtTokenProvider;
 import com.example.backend.dto.Login;
-import com.example.backend.dto.Users;
+import com.example.backend.entity.Member;
 import com.example.backend.service.UserService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -25,7 +25,7 @@ import java.util.Map;
 import java.util.UUID;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:3000") // ÇØ´ç ¿À¸®Áø¿¡¼­ÀÇ ¿äÃ»À» Çã¿ë
+@CrossOrigin(origins = "http://localhost:3000") // å ìŒ”ëŒì˜™ å ì™ì˜™å ì™ì˜™å ì™ì˜™å ì™ì˜™å ì™ì˜™å ì™ì˜™ å ì™ì˜™ì²­å ì™ì˜™ å ì™ì˜™å ?
 public class UserController {
 
     @Autowired
@@ -37,7 +37,7 @@ public class UserController {
     @Autowired
     private JwtTokenProvider jwtTokenProvider;
 
-    // application.properties¿¡ Á¤ÀÇµÈ °ªµéÀ» ÁÖÀÔ¹ŞÀ½
+    // application.propertieså ì™ì˜™ å ì™ì˜™å ì‹¤ë“¸ì˜™ å ì™ì˜™å ì™ì˜™å ì™ì˜™ å ì™ì˜™å ìŒ‰ë±„ì˜™å ì™ì˜™
     @Value("${spring.security.oauth2.client.registration.naver.client-id}")
     private String naverClientId;
 
@@ -53,16 +53,20 @@ public class UserController {
     @Value("${spring.security.oauth2.client.registration.kakao.redirect-uri}")
     private String kakaoRedirectUri;
 
-    // È¸¿ø°¡ÀÔ ±â´É
+    /**
+     * íšŒì›ê°€ì…
+     */
     @PostMapping("/signUp")
-    public ResponseEntity<String> signUp(@RequestBody Users user) {
-        System.out.println("user ======" + user.toString());
+    public ResponseEntity<String> signUp(@RequestBody Member member) {
+        System.out.println("user ======" + member.toString());
 
-        userService.signUp(user);
-        return ResponseEntity.ok("È¸¿ø°¡ÀÔÀÌ ¿Ï·áµÇ¾ú½À´Ï´Ù.");
+        userService.signUp(member);
+        return ResponseEntity.ok("íšŒå ì™ì˜™å ì™ì˜™å ì™ì˜™å ì™ì˜™ å ì‹¹ë¤„ì˜™í“¸å ì™ì˜™å ì™ì˜™æ±‚å ?");
     }
 
-    // ·Î±×ÀÎ ±â´É
+    /**
+     * ë¡œê·¸ì¸
+     */
     @PostMapping("/signIn")
     public ResponseEntity<?> signIn(@RequestBody Login.req req) {
         System.out.println("user ======" + req.toString());
@@ -72,14 +76,14 @@ public class UserController {
                     new UsernamePasswordAuthenticationToken(req.getUserId(), req.getPassword())
             );
 
-            String token = jwtTokenProvider.generateToken(authentication, "regular"); // ÀÏ¹İ·Î±×ÀÎ
+            String token = jwtTokenProvider.generateToken(authentication, "regular"); // å ì‹¹ë°˜ë¡œê¹ì˜™å ì™ì˜™
             return ResponseEntity.ok(new Login.res(token));
         } catch (BadCredentialsException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("·Î±×ÀÎ ½ÇÆĞ: ¾ÆÀÌµğ ¶Ç´Â ºñ¹Ğ¹øÈ£°¡ ÀÏÄ¡ÇÏÁö ¾Ê½À´Ï´Ù.");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("å ì‹¸ê¹ì˜™å ì™ì˜™ å ì™ì˜™å ì™ì˜™: å ì™ì˜™å ì‹±ë“¸ì˜™ å ì‹¤ëŒì˜™ å ì™ì˜™æ©˜å ì‹«ï½ì˜™å ?å ì™ì˜™ì¹˜å ì™ì˜™å ì™ì˜™ å ì‹­ì™ì˜™å ì‹¹ëŒì˜™.");
         }
     }
 
-    // ³×ÀÌ¹ö ·Î±×ÀÎ
+    // å ì™ì˜™å ì‹±ë±„ì˜™ å ì‹¸ê¹ì˜™å ì™ì˜™
     @GetMapping("/oauth/naver")
     public ResponseEntity<?> redirectNaverLogin() {
         String state = UUID.randomUUID().toString();
@@ -88,7 +92,7 @@ public class UserController {
                 + naverClientId + "&redirect_uri=" + URLEncoder.encode(naverRedirectUri, StandardCharsets.UTF_8)
                 + "&state=" + state;
 
-        // properties ÆÄÀÏ¿¡¼­ °¡Á®¿Â clientId¿Í redirectUri·Î URL »ı¼º
+        // properties å ì™ì˜™å ì‹¹ìš¸ì˜™å ì™ì˜™ å ì™ì˜™å ì™ì˜™å ì™ì˜™ clientIdå ì™ì˜™ redirectUriå ì™ì˜™ URL å ì™ì˜™å ì™ì˜™
 //        String naverUrl = "https://nid.naver.com/oauth2.0/authorize?response_type=code&client_id="
 //                + naverClientId + "&redirect_uri=" + URLEncoder.encode(naverRedirectUri, StandardCharsets.UTF_8)
 //                + "&state=" + state;
@@ -103,8 +107,8 @@ public class UserController {
 
     @GetMapping("/oauth2/callback/naver")
     public ResponseEntity<?> handleNaverCallback2(@RequestParam String code, @RequestParam String state) {
-        System.out.println("ÆÄ¶ó¹ÌÅÍ Á¶È¸ ==> " + code);
-        System.out.println("ÆÄ¶ó¹ÌÅÍ Á¶È¸ ==> " + state);
+        System.out.println("å ì‹ë°ì˜™å ì™ì˜™å ?å ì™ì˜™íšŒ ==> " + code);
+        System.out.println("å ì‹ë°ì˜™å ì™ì˜™å ?å ì™ì˜™íšŒ ==> " + state);
 
         String tokenUrl = "https://nid.naver.com/oauth2.0/token?grant_type=authorization_code"
                 + "&client_id=" + naverClientId
@@ -112,22 +116,22 @@ public class UserController {
                 + "&code=" + code
                 + "&state=" + state;
 
-        // RestTemplateÀ» ÀÌ¿ëÇØ ¾×¼¼½º ÅäÅ« ¿äÃ»
+        // RestTemplateå ì™ì˜™ å ì‹±ìš¸ì˜™å ì™ì˜™ å ìŒ“ì‡½ì˜™å ì™ì˜™ å ì™ì˜™í° å ì™ì˜™ì²­
         RestTemplate restTemplate = new RestTemplate();
         ResponseEntity<String> response = restTemplate.postForEntity(tokenUrl, null, String.class);
 
         if (response.getStatusCode() == HttpStatus.OK) {
-            // ¾×¼¼½º ÅäÅ« ÃßÃâ
+            // å ìŒ“ì‡½ì˜™å ì™ì˜™ å ì™ì˜™í° å ì™ì˜™å ì™ì˜™
             String responseBody = response.getBody();
-            System.out.println("ÅäÅ« ÀÀ´ä: " + responseBody);
+            System.out.println("å ì™ì˜™í° å ì™ì˜™å ì™ì˜™: " + responseBody);
 
             try {
                 ObjectMapper objectMapper = new ObjectMapper();
                 JsonNode tokenJson = objectMapper.readTree(responseBody);
                 String accessToken = tokenJson.get("access_token").asText();
-                System.out.println("¾×¼¼½º ÅäÅ«: " + accessToken);
+                System.out.println("å ìŒ“ì‡½ì˜™å ì™ì˜™ å ì™ì˜™í°: " + accessToken);
 
-                // ¾×¼¼½º ÅäÅ«À» ÀÌ¿ëÇØ »ç¿ëÀÚ Á¤º¸ ¿äÃ»
+                // å ìŒ“ì‡½ì˜™å ì™ì˜™ å ì™ì˜™í°å ì™ì˜™ å ì‹±ìš¸ì˜™å ì™ì˜™ å ì™ì˜™å ì™ì˜™å ?å ì™ì˜™å ì™ì˜™ å ì™ì˜™ì²­
                 HttpHeaders headers = new HttpHeaders();
                 headers.set("Authorization", "Bearer " + accessToken);
                 HttpEntity<String> entity = new HttpEntity<>(headers);
@@ -139,50 +143,50 @@ public class UserController {
                         String.class
                 );
 
-                // »ç¿ëÀÚ Á¤º¸ ÀÀ´ä Ã³¸®
+                // å ì™ì˜™å ì™ì˜™å ?å ì™ì˜™å ì™ì˜™ å ì™ì˜™å ì™ì˜™ ì²˜å ì™ì˜™
                 String userInfo = userInfoResponse.getBody();
                 JsonNode userInfoJson = objectMapper.readTree(userInfo);
 
-                // »ç¿ëÀÚ ID °¡Á®¿À±â
-                String userId = userInfoJson.get("response").get("id").asText();
+                // å ì™ì˜™å ì™ì˜™å ?ID å ì™ì˜™å ì™ì˜™å ì™ì˜™å ì™ì˜™
+                String id = userInfoJson.get("response").get("id").asText();
 
-                // »ç¿ëÀÚ Á¸Àç ¿©ºÎ È®ÀÎ
-                Users existingUser = userService.findByUserId(userId);
+                // å ì™ì˜™å ì™ì˜™å ?å ì™ì˜™å ì™ì˜™ å ì™ì˜™å ì™ì˜™ í™•å ì™ì˜™
+                Member existingUser = userService.findById(id);
                 if (existingUser == null) {
-                    // ¹Ì°¡ÀÔÀÚ¸é È¸¿ø µî·Ï Ã³¸®
+                    // å ì‹±ê³¤ì˜™å ì™ì˜™å ìŒ˜ëªŒì˜™ íšŒå ì™ì˜™ å ì™ì˜™å ?ì²˜å ì™ì˜™
                     String cleanBirthday = userInfoJson.get("response").get("birthday").asText().replace("-", "");
                     String cleanMobile = userInfoJson.get("response").get("mobile").asText().replace("-", "");
 
-                    Users newUser = new Users();
-                    newUser.setUserId(userId);
+                    Member newUser = new Member();
+                    newUser.setMemberId(id);
                     newUser.setEmail(userInfoJson.get("response").get("email").asText());
                     newUser.setName(userInfoJson.get("response").get("name").asText());
-                    newUser.setMobile(cleanMobile);
-                    newUser.setBIRTH(userInfoJson.get("response").get("birthyear").asText() + cleanBirthday);
-                    newUser.setGENDER(userInfoJson.get("response").get("gender").asText());
+//                    newUser.setMobile(cleanMobile);
+//                    newUser.setBIRTH(userInfoJson.get("response").get("birthyear").asText() + cleanBirthday);
+//                    newUser.setGENDER(userInfoJson.get("response").get("gender").asText());
 
-                    // ³×ÀÌ¹ö ·Î±×ÀÎÀ¸·Î µî·ÏµÈ »ç¿ëÀÚÀÌ¹Ç·Î ºñ¹Ğ¹øÈ£¸¦ ¼³Á¤ÇÏÁö ¾ÊÀ½
-                    newUser.setSocialLogin(true);
+                    // å ì™ì˜™å ì‹±ë±„ì˜™ å ì‹¸ê¹ì˜™å ì™ì˜™å ì™ì˜™å ì™ì˜™ å ì™ì˜™æºå ?å ì™ì˜™å ì™ì˜™å ì™ì˜™è­´í“å ?å ì™ì˜™æ©˜å ì‹«ï½ì˜™å ?å ì™ì˜™å ì™ì˜™å ì™ì˜™å ì™ì˜™ å ì™ì˜™å ì™ì˜™
+//                    newUser.setSocialLogin(true);
 
-                    // È¸¿ø µî·Ï
+                    // íšŒå ì™ì˜™ å ì™ì˜™å ?
                     userService.signUp(newUser);
 
-                    // »õ·Î °¡ÀÔµÈ »ç¿ëÀÚ·Î ÀÎÁõ »ı¼º
+                    // å ì™ì˜™å ì™ì˜™ å ì™ì˜™å ìŒ‰ë“¸ì˜™ å ì™ì˜™å ì™ì˜™ç±³å ?å ì™ì˜™å ì™ì˜™ å ì™ì˜™å ì™ì˜™
                     existingUser = newUser;
                 }
 
-                // JWT ÅäÅ« »ı¼º (ÀÏ¹İ ·Î±×ÀÎ°ú µ¿ÀÏ)
+                // JWT å ì™ì˜™í° å ì™ì˜™å ì™ì˜™ (å ì‹¹ë±„ì˜™ å ì‹¸ê¹ì˜™å ì‹¸ê³¤ì˜™ å ì™ì˜™å ì™ì˜™)
                 Authentication authentication = new UsernamePasswordAuthenticationToken(existingUser, null, new ArrayList<>());
                 String token = jwtTokenProvider.generateToken(authentication, "naver");
 
-                // ÅäÅ«À» Å¬¶óÀÌ¾ğÆ®¿¡°Ô ÀÀ´äÀ¸·Î º¸³¿
+                // å ì™ì˜™í°å ì™ì˜™ í´å ì™ì˜™å ì‹±ì–µì˜™íŠ¸å ì™ì˜™å ì™ì˜™ å ì™ì˜™å ì™ì˜™å ì™ì˜™å ì™ì˜™ å ì™ì˜™å ì™ì˜™
 
                 System.out.println(ResponseEntity.ok(Map.of("token", token)));
                 return ResponseEntity.status(HttpStatus.FOUND)
                         .header(HttpHeaders.LOCATION, "http://localhost:3000/oauth2/callback/naver?token=" + token)
                         .build();
 
-//                return ResponseEntity.ok(Map.of("token", token));  // ´Ü¼ø JSON ÀÀ´ä
+//                return ResponseEntity.ok(Map.of("token", token));  // å ìŒ¤ì‡½ì˜™ JSON å ì™ì˜™å ì™ì˜™
 
 //                return ResponseEntity.status(HttpStatus.FOUND)
 //                        .header(HttpHeaders.LOCATION, "http://localhost:3000/oauth2/callback/naver?token=" + token)
@@ -190,22 +194,22 @@ public class UserController {
 
 //                return ResponseEntity.ok(new Login.res(token));
 
-//                return ResponseEntity.ok("³×ÀÌ¹ö ·Î±×ÀÎ ¼º°ø")
+//                return ResponseEntity.ok("å ì™ì˜™å ì‹±ë±„ì˜™ å ì‹¸ê¹ì˜™å ì™ì˜™ å ì™ì˜™å ì™ì˜™")
 
             } catch (JsonProcessingException e) {
                 e.printStackTrace();
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("JSON Ã³¸® ¿À·ù ¹ß»ı");
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("JSON ì²˜å ì™ì˜™ å ì™ì˜™å ì™ì˜™ å ìŒ©ì‚¼ì˜™");
             }
 
         } else {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("³×ÀÌ¹ö ·Î±×ÀÎ ½ÇÆĞ");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("å ì™ì˜™å ì‹±ë±„ì˜™ å ì‹¸ê¹ì˜™å ì™ì˜™ å ì™ì˜™å ì™ì˜™");
         }
     }
 
-    // Ä«Ä«¿À ·Î±×ÀÎ
+    // ì¹´ì¹´å ì™ì˜™ å ì‹¸ê¹ì˜™å ì™ì˜™
     @GetMapping("/oauth/kakao")
     public ResponseEntity<?> redirectKakaoLogin() {
-        // properties ÆÄÀÏ¿¡¼­ °¡Á®¿Â clientId¿Í redirectUri·Î URL »ı¼º
+        // properties å ì™ì˜™å ì‹¹ìš¸ì˜™å ì™ì˜™ å ì™ì˜™å ì™ì˜™å ì™ì˜™ clientIdå ì™ì˜™ redirectUriå ì™ì˜™ URL å ì™ì˜™å ì™ì˜™
         String kakaoUrl = "https://kauth.kakao.com/oauth/authorize?response_type=code&client_id="
                 + kakaoClientId + "&redirect_uri=" + URLEncoder.encode(kakaoRedirectUri, StandardCharsets.UTF_8);
 
@@ -217,8 +221,8 @@ public class UserController {
 
     @GetMapping("/kakao/callback")
     public ResponseEntity<?> handleKakaoCallback(@RequestParam String code) {
-        // Ä«Ä«¿À ÅäÅ« ¹ß±Ş ¹× »ç¿ëÀÚ Á¤º¸ ¿äÃ» Ã³¸®
-        // ÅäÅ« ¹ß±Ş ÈÄ Å¬¶óÀÌ¾ğÆ®·Î ÇÊ¿äÇÑ Á¤º¸¸¦ ¸®ÅÏ
-        return ResponseEntity.ok("Ä«Ä«¿À ·Î±×ÀÎ ¼º°ø");
+        // ì¹´ì¹´å ì™ì˜™ å ì™ì˜™í° å ìŒ©ê¹ì˜™ å ì™ì˜™ å ì™ì˜™å ì™ì˜™å ?å ì™ì˜™å ì™ì˜™ å ì™ì˜™ì²­ ì²˜å ì™ì˜™
+        // å ì™ì˜™í° å ìŒ©ê¹ì˜™ å ì™ì˜™ í´å ì™ì˜™å ì‹±ì–µì˜™íŠ¸å ì™ì˜™ å ì‹­ìš¸ì˜™å ì™ì˜™ å ì™ì˜™å ì™ì˜™å ì™ì˜™ å ì™ì˜™å ì™ì˜™
+        return ResponseEntity.ok("ì¹´ì¹´å ì™ì˜™ å ì‹¸ê¹ì˜™å ì™ì˜™ å ì™ì˜™å ì™ì˜™");
     }
 }

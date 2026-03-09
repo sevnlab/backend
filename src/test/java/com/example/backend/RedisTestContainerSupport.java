@@ -5,7 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
-// ½ÇÁ¦ Redis ¼­¹ö¸¦ »ç¿ëÇÏ´Â Å×½ºÆ® Áö¿ø Å¬·¡½º
+// ì‹¤ì œ Redis ì„œë²„ë¥¼ ì‚¬ìš©í•˜ëŠ” í…ŒìŠ¤íŠ¸ ì§€ì› í´ë˜ìŠ¤
 @SpringBootTest
 public abstract class RedisTestContainerSupport {
 

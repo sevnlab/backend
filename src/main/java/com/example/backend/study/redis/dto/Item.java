@@ -8,17 +8,17 @@ import java.util.concurrent.atomic.AtomicLong;
 @Getter
 @ToString
 public class Item {
-    private Long itemId; // ½Äº°ÀÚ
+    private Long itemId; // ì‹ë³„ì
     private String data;
 
-    // itemId ¸¦ Ã¤¹øÇÏ±â À§ÇØ AtomicLong(µ¿½Ã¼º¿¡¼­ thread-safe ÇÑ Å¬·¡½º)  Á¤ÀÇ
+    // itemId ë¥¼ ì±„ë²ˆí•˜ê¸° ìœ„í•´ AtomicLong(ë™ì‹œì„±ì—ì„œ thread-safe í•œ í´ë˜ìŠ¤)  ì •ì˜
     private static final AtomicLong NEXT_ID = new AtomicLong();
 
 
     public static Item create(ItemCreateRequest request) {
         Item item = new Item();
 
-        item.itemId = NEXT_ID.incrementAndGet(); // create ¸Ş¼Òµå°¡ È£ÃâµÉ ¶§¸¶´Ù ID ¹ß±Ş
+        item.itemId = NEXT_ID.incrementAndGet(); // create ë©”ì†Œë“œê°€ í˜¸ì¶œë  ë•Œë§ˆë‹¤ ID ë°œê¸‰
         item.data = request.data();
         return item;
     }

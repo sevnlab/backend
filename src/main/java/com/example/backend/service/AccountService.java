@@ -13,9 +13,9 @@ import jakarta.persistence.OptimisticLockException;
 
 
 /**
- * ³«°üÀû + ºñ°üÀû ÅëÇÕ ¼­ºñ½º
+ * ë‚™ê´€ì  + ë¹„ê´€ì  í†µí•© ì„œë¹„ìŠ¤
  *
- * °èÁÂ ±İ¾× Â÷°¨ + ÀÌ·Â ÀúÀå
+ * ê³„ì¢Œ ê¸ˆì•¡ ì°¨ê° + ì´ë ¥ ì €ì¥
  */
 @Service
 @RequiredArgsConstructor
@@ -26,11 +26,11 @@ public class AccountService {
 
     /**
      * ======================================================
-     * ¨è ºñ°üÀû ¶ô (Pessimistic Lock)
+     * â‘¡ ë¹„ê´€ì  ë½ (Pessimistic Lock)
      * ------------------------------------------------------
-     * - SELECT FOR UPDATE ·Î DB°¡ Á÷Á¢ row-level lock ¼öÇà
-     * - Æ®·£Àè¼Ç Ä¿¹Ô ½Ã ¶ô ÇØÁ¦
-     * - µ¿½Ã¿¡ Á¢±ÙÇÏ¸é ´Ù¸¥ ¼¼¼ÇÀº ´ë±â
+     * - SELECT FOR UPDATE ë¡œ DBê°€ ì§ì ‘ row-level lock ìˆ˜í–‰
+     * - íŠ¸ëœì­ì…˜ ì»¤ë°‹ ì‹œ ë½ í•´ì œ
+     * - ë™ì‹œì— ì ‘ê·¼í•˜ë©´ ë‹¤ë¥¸ ì„¸ì…˜ì€ ëŒ€ê¸°
      * ======================================================
      */
     @Transactional
@@ -38,17 +38,17 @@ public class AccountService {
         String accountKey = request.getAccountKey();
         long useAmt = request.getAmount();
 
-        // 1. ¶ô °É°í Á¶È¸
+        // 1. ë½ ê±¸ê³  ì¡°íšŒ
         AccountInfo account = accountRepository.findByIdForUpdate(accountKey)
-                .orElseThrow(() -> new IllegalArgumentException("°èÁÂ¸¦ Ã£À» ¼ö ¾ø½À´Ï´Ù."));
+                .orElseThrow(() -> new IllegalArgumentException("ê³„ì¢Œë¥¼ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤."));
 
         log.info("test1");
-        // 2. ÀÜ¾× È®ÀÎ
+        // 2. ì”ì•¡ í™•ì¸
         if (account.getTotalAmt() < useAmt) {
-            throw new IllegalArgumentException("ÀÜ¾×ÀÌ ºÎÁ·ÇÕ´Ï´Ù.");
+            throw new IllegalArgumentException("ì”ì•¡ì´ ë¶€ì¡±í•©ë‹ˆë‹¤.");
         }
 
-        // 3. Â÷°¨
+        // 3. ì°¨ê°
         long remain = account.getTotalAmt() - useAmt;
         account.setTotalAmt(remain);
         accountRepository.save(account);
@@ -56,11 +56,11 @@ public class AccountService {
 
     /**
      * ======================================================
-     * ¨ç ³«°üÀû ¶ô (Optimistic Lock)
+     * â‘  ë‚™ê´€ì  ë½ (Optimistic Lock)
      * ------------------------------------------------------
-     * - version ÄÃ·³À» »ç¿ëÇÏ¿© Ãæµ¹ °¨Áö
-     * - UPDATE ½Ã WHERE version=? Á¶°Ç Ãß°¡
-     * - Ãæµ¹ ¹ß»ı ½Ã OptimisticLockException ¹ß»ı
+     * - version ì»¬ëŸ¼ì„ ì‚¬ìš©í•˜ì—¬ ì¶©ëŒ ê°ì§€
+     * - UPDATE ì‹œ WHERE version=? ì¡°ê±´ ì¶”ê°€
+     * - ì¶©ëŒ ë°œìƒ ì‹œ OptimisticLockException ë°œìƒ
      * ======================================================
      */
     @Transactional
@@ -68,30 +68,30 @@ public class AccountService {
         String accountKey = request.getAccountKey();
         long useAmt = request.getAmount();
 
-        // 1. °èÁÂ Á¶È¸
+        // 1. ê³„ì¢Œ ì¡°íšŒ
         AccountInfo account = accountRepository.findById(accountKey)
-                .orElseThrow(() -> new IllegalArgumentException("°èÁÂ¸¦ Ã£À» ¼ö ¾ø½À´Ï´Ù."));
+                .orElseThrow(() -> new IllegalArgumentException("ê³„ì¢Œë¥¼ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤."));
 
-        log.info("{} - Á¶È¸: version={}, totalAmt={}",
+        log.info("{} - ì¡°íšŒ: version={}, totalAmt={}",
                 Thread.currentThread().getName(), account.getVersion(), account.getTotalAmt());
 
-        // 2. ÀÜ¾× È®ÀÎ
+        // 2. ì”ì•¡ í™•ì¸
         if (account.getTotalAmt() < useAmt) {
-            throw new IllegalArgumentException("ÀÜ¾×ÀÌ ºÎÁ·ÇÕ´Ï´Ù.");
+            throw new IllegalArgumentException("ì”ì•¡ì´ ë¶€ì¡±í•©ë‹ˆë‹¤.");
         }
 
-        // 3. Â÷°¨
+        // 3. ì°¨ê°
         long remain = account.getTotalAmt() - useAmt;
         account.setTotalAmt(remain);
 
-        // 4. version Ã¼Å© ¹× ÀúÀå
+        // 4. version ì²´í¬ ë° ì €ì¥
         try {
-            accountRepository.save(account); // ¿©±â¼­ version check ¹ß»ı
-            log.info("{} - UPDATE ¿Ï·á ÈÄ version={}", Thread.currentThread().getName(), account.getVersion());
+            accountRepository.save(account); // ì—¬ê¸°ì„œ version check ë°œìƒ
+            log.info("{} - UPDATE ì™„ë£Œ í›„ version={}", Thread.currentThread().getName(), account.getVersion());
             // entityManager.flush();
             // log.info("test11");
         } catch (OptimisticLockException e) {
-            log.warn("{} - ³«°üÀû¶ô Ãæµ¹ ¹ß»ı: {}", Thread.currentThread().getName(), e.getMessage());
+            log.warn("{} - ë‚™ê´€ì ë½ ì¶©ëŒ ë°œìƒ: {}", Thread.currentThread().getName(), e.getMessage());
             throw e;
         }
     }
@@ -101,28 +101,28 @@ public class AccountService {
     public int useAmountOptimisticTest(String accountKey, long useAmt) {
 
 
-        // 1. °èÁÂ Á¶È¸
+        // 1. ê³„ì¢Œ ì¡°íšŒ
         AccountInfo account = accountRepository.findById(accountKey)
-                .orElseThrow(() -> new IllegalArgumentException("°èÁÂ¸¦ Ã£À» ¼ö ¾ø½À´Ï´Ù."));
+                .orElseThrow(() -> new IllegalArgumentException("ê³„ì¢Œë¥¼ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤."));
 
-        log.info("{} - Á¶È¸: version={}, totalAmt={}",
+        log.info("{} - ì¡°íšŒ: version={}, totalAmt={}",
                 Thread.currentThread().getName(), account.getVersion(), account.getTotalAmt());
 
-        // 2. ÀÜ¾× È®ÀÎ
+        // 2. ì”ì•¡ í™•ì¸
         if (account.getTotalAmt() < useAmt) {
-            throw new IllegalArgumentException("ÀÜ¾×ÀÌ ºÎÁ·ÇÕ´Ï´Ù.");
+            throw new IllegalArgumentException("ì”ì•¡ì´ ë¶€ì¡±í•©ë‹ˆë‹¤.");
         }
 
-        // 3. Â÷°¨
+        // 3. ì°¨ê°
         long remain = account.getTotalAmt() - useAmt;
         account.setTotalAmt(remain);
 
-        // 4. version Ã¼Å© ¹× ÀúÀå
+        // 4. version ì²´í¬ ë° ì €ì¥
         try {
-            accountRepository.save(account); // ¿©±â¼­ version check ¹ß»ı
-            log.info("{} - UPDATE ¿Ï·á ÈÄ version={}", Thread.currentThread().getName(), account.getVersion());
+            accountRepository.save(account); // ì—¬ê¸°ì„œ version check ë°œìƒ
+            log.info("{} - UPDATE ì™„ë£Œ í›„ version={}", Thread.currentThread().getName(), account.getVersion());
         } catch (OptimisticLockException e) {
-            log.warn("{} - ³«°üÀû¶ô Ãæµ¹ ¹ß»ı: {}", Thread.currentThread().getName(), e.getMessage());
+            log.warn("{} - ë‚™ê´€ì ë½ ì¶©ëŒ ë°œìƒ: {}", Thread.currentThread().getName(), e.getMessage());
             throw e;
         }
 

@@ -20,7 +20,7 @@
 //    private final JwtTokenProvider tokenProvider;
 //    private final UserDetailsService userDetailsService;
 //
-//    // »ı¼ºÀÚ ÁÖÀÔ
+//    // ìƒì„±ì ì£¼ì…
 //    public JwtAuthenticationFilter(JwtTokenProvider tokenProvider, UserDetailsService userDetailsService) {
 //        this.tokenProvider = tokenProvider;
 //        this.userDetailsService = userDetailsService;
@@ -28,34 +28,34 @@
 //
 //    @Override
 //    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws IOException, ServletException {
-//        // 1. ¿äÃ»¿¡¼­ JWT ÃßÃâ
+//        // 1. ìš”ì²­ì—ì„œ JWT ì¶”ì¶œ
 //        String token = getJwtFromRequest(request);
 //
-//        // 2. JWT°¡ À¯È¿ÇÑÁö È®ÀÎÇÏ°í, À¯È¿ÇÏ¸é »ç¿ëÀÚ Á¤º¸¸¦ SecurityContext¿¡ ¼³Á¤
+//        // 2. JWTê°€ ìœ íš¨í•œì§€ í™•ì¸í•˜ê³ , ìœ íš¨í•˜ë©´ ì‚¬ìš©ì ì •ë³´ë¥¼ SecurityContextì— ì„¤ì •
 //        if (token != null && tokenProvider.validateToken(token)) {
 //
-//            // JWT¿¡¼­ »ç¿ëÀÚ ÀÌ¸§ ÃßÃâ
+//            // JWTì—ì„œ ì‚¬ìš©ì ì´ë¦„ ì¶”ì¶œ
 //            String username = tokenProvider.getUsernameFromJWT(token);
 //
-//            // »ç¿ëÀÚ Á¤º¸¸¦ ·Îµå
+//            // ì‚¬ìš©ì ì •ë³´ë¥¼ ë¡œë“œ
 //            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 //
-//            // ÀÎÁõ °´Ã¼ »ı¼º ¹× ¼³Á¤
+//            // ì¸ì¦ ê°ì²´ ìƒì„± ë° ì„¤ì •
 //            if (userDetails != null) {
 //                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
 //                        userDetails, null, userDetails.getAuthorities());
 //                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-//                // SecurityContext¿¡ ÀÎÁõ Á¤º¸ ÀúÀå
+//                // SecurityContextì— ì¸ì¦ ì •ë³´ ì €ì¥
 //                SecurityContextHolder.getContext().setAuthentication(authentication);
 //            }
 //        }
 //
-//        // ´ÙÀ½ ÇÊÅÍ·Î ¿äÃ»À» ³Ñ±è
+//        // ë‹¤ìŒ í•„í„°ë¡œ ìš”ì²­ì„ ë„˜ê¹€
 //        filterChain.doFilter(request, response);
 //    }
 //
 //
-//    // JWT ÅäÅ«À» HTTP ¿äÃ» Çì´õ¿¡¼­ ÃßÃâÇÏ´Â ¸Ş¼­µå
+//    // JWT í† í°ì„ HTTP ìš”ì²­ í—¤ë”ì—ì„œ ì¶”ì¶œí•˜ëŠ” ë©”ì„œë“œ
 //    private String getJwtFromRequest(HttpServletRequest request) {
 //        String bearerToken = request.getHeader("Authorization");
 //        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {

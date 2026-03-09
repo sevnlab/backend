@@ -22,8 +22,8 @@ public class RedisCacheConfig {
     public RedisCacheManager cacheManager(RedisConnectionFactory connectionFactory) {
 
         RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig()
-                .entryTtl(Duration.ofMinutes(5))   // ±âº» Ä³½Ã TTL
-                .disableCachingNullValues() // null °ª ÀúÀå ¾ÈÇÔ
+                .entryTtl(Duration.ofMinutes(5))   // ê¸°ë³¸ ìºì‹œ TTL
+                .disableCachingNullValues() // null ê°’ ì €ì¥ ì•ˆí•¨
                 .serializeValuesWith(
                         RedisSerializationContext.SerializationPair.fromSerializer(
                                 new GenericJackson2JsonRedisSerializer()

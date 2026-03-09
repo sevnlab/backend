@@ -74,7 +74,7 @@ dependencies {
    Encoding 설정
 =============================== */
 tasks.withType(JavaCompile).configureEach {
-    options.encoding = 'MS949'
+    options.encoding = 'UTF-8'
 }
 
 tasks.withType(ProcessResources).configureEach {

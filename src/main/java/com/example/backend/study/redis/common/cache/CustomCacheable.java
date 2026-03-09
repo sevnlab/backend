@@ -5,14 +5,14 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Target(ElementType.METHOD) // ¸Ş¼­µå¸¸ Çã¿ë
-@Retention(RetentionPolicy.RUNTIME) // ½ÇÇàÁß À¯Áö
+@Target(ElementType.METHOD) // ë©”ì„œë“œë§Œ í—ˆìš©
+@Retention(RetentionPolicy.RUNTIME) // ì‹¤í–‰ì¤‘ ìœ ì§€
 public @interface CustomCacheable {
-    CacheStrategy cacheStrategy(); // Ä³½Ã Àü·«
-    String cacheName(); // Ä³½Ã ÀÌ¸§
+    CacheStrategy cacheStrategy(); // ìºì‹œ ì „ëµ
+    String cacheName(); // ìºì‹œ ì´ë¦„
 
-    String key(); // Ä³½Ã Å°
-    long ttlSeconds(); // Ä³½Ã À¯Áö ½Ã°£(ÃÊ)
+    String key(); // ìºì‹œ í‚¤
+    long ttlSeconds(); // ìºì‹œ ìœ ì§€ ì‹œê°„(ì´ˆ)
 
 
 }

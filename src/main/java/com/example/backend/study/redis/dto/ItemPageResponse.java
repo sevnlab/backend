@@ -11,7 +11,7 @@ public record ItemPageResponse(List<ItemResponse> items, long count) {
 
     public static ItemPageResponse from(List<Item> items, long count) {
 
-        // °¢ Item À» ItemResponse ·Î º¯È¯
+        // ê° Item ì„ ItemResponse ë¡œ ë³€í™˜
         return fromResponse(items.stream().map(ItemResponse::from).toList(), count);
     }
 }

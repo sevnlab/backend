@@ -35,7 +35,7 @@ public class ItemController {
     @GetMapping("/cache-strategy/{cacheStrategy}/items/infinite-scroll")
     public ItemPageResponse readInfiniteScroll(
             @PathVariable CacheStrategy cacheStrategy,
-            @PathVariable(required = false) Long lastItemId, //Ã¹ÆäÀÌÁö´Â null
+            @PathVariable(required = false) Long lastItemId, //ì²«íŽ˜ì´ì§€ëŠ” null
             @PathVariable Long pageSize
     ) {
 
@@ -71,7 +71,7 @@ public class ItemController {
     }
 
 
-    // cacheStrategy ÆÄ¶ó¹ÌÅÍ°¡ ½ÇÁ¦±¸ÇöµÈ Ä³½Ã ¼­ºñ½º ±¸ÇöÃ¼¸¦ Ã£´Â´Ù.
+    // cacheStrategy íŒŒë¼ë¯¸í„°ê°€ ì‹¤ì œêµ¬í˜„ëœ ìºì‹œ ì„œë¹„ìŠ¤ êµ¬í˜„ì²´ë¥¼ ì°¾ëŠ”ë‹¤.
     private ItemCacheService resolveCacheHandler(CacheStrategy cacheStrategy) {
         return itemCacheServices.stream()
                 .filter(itemCacheService -> itemCacheService.supports(cacheStrategy))
