@@ -6,6 +6,7 @@ import com.example.backend.dto.Login;
 import com.example.backend.dto.SignInRequest;
 import com.example.backend.dto.SignInResponse;
 import com.example.backend.entity.Member;
+import com.example.backend.service.LoginAttemptService;
 import com.example.backend.service.UserService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -36,6 +37,9 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private LoginAttemptService loginAttemptService;
 
     @Autowired
     private JwtTokenProvider jwtTokenProvider;
@@ -74,12 +78,27 @@ public class UserController {
     public ApiResponse<SignInResponse> signIn(@RequestBody SignInRequest request) {
         System.out.println("user ======" + request);
 
+        // 계정 잠금 여부 먼저 확인 (3회 연속 실패 시 24시간 잠금)
+        if (loginAttemptService.isLocked(request.getMemberId())) {
+            return ApiResponse.fail("로그인 시도가 3회 초과되어 24시간 동안 로그인이 제한됩니다.");
+        }
+
         try {
             SignInResponse signInResponse = userService.signIn(request);
+
+            // 로그인 성공 시 실패 횟수 초기화
+            loginAttemptService.loginSucceeded(request.getMemberId());
+
             return ApiResponse.success("정상적으로 처리되었습니다.", signInResponse);
         } catch (Exception e) {
-            System.out.println("로그인 에러");
-            System.out.println(e.getMessage());
+            // 로그인 실패 시 횟수 증가
+            loginAttemptService.loginFailed(request.getMemberId());
+
+            // 실패 후 잠금 상태가 됐는지 확인
+            if (loginAttemptService.isLocked(request.getMemberId())) {
+                return ApiResponse.fail("로그인 3회 연속 실패로 24시간 동안 로그인이 제한됩니다.");
+            }
+
             return ApiResponse.fail(e.getMessage());
         }
 
