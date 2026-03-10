@@ -1,7 +1,10 @@
 package com.example.backend.controller;
 
 import com.example.backend.config.JwtTokenProvider;
+import com.example.backend.dto.ApiResponse;
 import com.example.backend.dto.Login;
+import com.example.backend.dto.SignInRequest;
+import com.example.backend.dto.SignInResponse;
 import com.example.backend.entity.Member;
 import com.example.backend.service.UserService;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -68,19 +71,30 @@ public class UserController {
      * 로그인
      */
     @PostMapping("/signIn")
-    public ResponseEntity<?> signIn(@RequestBody Login.req req) {
-        System.out.println("user ======" + req.toString());
+    public ApiResponse<SignInResponse> signIn(@RequestBody SignInRequest request) {
+        System.out.println("user ======" + request);
 
         try {
-            Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(req.getUserId(), req.getPassword())
-            );
-
-            String token = jwtTokenProvider.generateToken(authentication, "regular"); // 占싹반로깍옙占쏙옙
-            return ResponseEntity.ok(new Login.res(token));
-        } catch (BadCredentialsException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("占싸깍옙占쏙옙 占쏙옙占쏙옙: 占쏙옙占싱듸옙 占실댐옙 占쏙옙橘占싫ｏ옙占?占쏙옙치占쏙옙占쏙옙 占십쏙옙占싹댐옙.");
+            SignInResponse signInResponse = userService.signIn(request);
+            return ApiResponse.success("정상적으로 처리되었습니다.", signInResponse);
+        } catch (Exception e) {
+            System.out.println("로그인 에러");
+            System.out.println(e.getMessage());
+            return ApiResponse.fail(e.getMessage());
         }
+
+//        try {
+//            Authentication authentication = authenticationManager.authenticate(
+//                    new UsernamePasswordAuthenticationToken(request.getMemberId(), request.getPassword())
+//            );
+//
+//            String token = jwtTokenProvider.generateToken(authentication, "regular");
+//            return ResponseEntity.ok(new Login.res(token));
+//        } catch (BadCredentialsException e) {
+//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 실패: 아이디 또는 비밀번호가 틀렸습니다.");
+//        } catch (Exception e) {
+//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+//        }
     }
 
     // 占쏙옙占싱뱄옙 占싸깍옙占쏙옙

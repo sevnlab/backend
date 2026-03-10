@@ -1,0 +1,21 @@
+# =====================================================
+# 로컬 개발 환경 설정 (application-local.yml)
+# =====================================================
+# 실행 방법 (IntelliJ):
+#   Run Configuration -> Active profiles -> "local" 입력
+#
+# 실행 방법 (jar):
+#   java -jar app.jar --spring.profiles.active=local
+# =====================================================
+
+spring:
+  cache:
+    type: none  # 로컬에서는 Redis 캐시 사용 안 함
+
+  autoconfigure:
+    exclude:
+      # 로컬에는 Redis 서버가 없으므로 자동설정을 제외
+      # 이걸 빼면 localhost:6379 에 연결 시도하다가 앱이 뜨지 않음
+      - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration
+      - org.redisson.spring.starter.RedissonAutoConfigurationV2

@@ -2,7 +2,6 @@ package com.example.backend.repository;
 
 
 import com.example.backend.entity.Member;
-//import com.example.backend.dto.UsersPrimaryKey;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
@@ -13,5 +12,5 @@ import java.util.Optional;
 public interface SignUpRepository extends JpaRepository<Member, String> {
 
     // userId로 사용자 검색
-    Optional<Member> findById(String userId);
+    Optional<Member> findByMemberIdAndPassword(String memberId, String password);
 }

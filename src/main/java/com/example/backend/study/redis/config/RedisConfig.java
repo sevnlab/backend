@@ -4,6 +4,7 @@ import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -15,7 +16,8 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
  * RedisTemplate 占쏙옙占쏙옙 占쏙옙占쏙옙占?占쏙옙占쏙옙 Redis 占쏙옙占쏙옙
  * RedisTemplate占쏙옙 占쏙옙占쏙옙 占쏙옙占쌉받억옙 Redis占쏙옙 占쏙옙占쏙옙占쏙옙占쏙옙 占쏙옙占쏙옙占쏙옙 占쏙옙 占쏙옙占?
  */
-// @Configuration  // Redis ?꾩떆 鍮꾪솢?깊솕
+@Configuration
+@Profile("real")
 @RequiredArgsConstructor
 public class RedisConfig {
     private final RedisConnectionFactory redisConnectionFactory;

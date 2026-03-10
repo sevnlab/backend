@@ -1,10 +1,14 @@
 package com.example.backend.service;
 
+import com.example.backend.dto.SignInRequest;
+import com.example.backend.dto.SignInResponse;
 import com.example.backend.entity.Member;
 import com.example.backend.repository.SignUpRepository;
 import com.example.backend.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -34,6 +38,21 @@ public class UserService {
 //            users.setPassword(passwordEncoder.encode(users.getPassword())); // 비밀번호를 암호화해서 저장
 //        }
         signUpRepository.save(member);
+    }
+
+    /**
+     * 로그인 시도
+     */
+    public SignInResponse signIn(SignInRequest request) {
+        Member member = signUpRepository.findByMemberIdAndPassword(request.getMemberId(), request.getPassword())
+                .orElseThrow(() -> new UsernameNotFoundException("아이디 또는 비밀번호가 올바르지 않습니다."));
+
+        SignInResponse response = new SignInResponse();
+        response.setMemberId(member.getMemberId());
+        response.setName(member.getName());
+        response.setEmail(member.getEmail());
+
+        return response;
     }
 
     // userId로 사용자 조회
