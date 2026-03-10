@@ -15,6 +15,6 @@ public interface LoginAttemptService {
     /** 로그인 성공 처리 - 실패 횟수 초기화 */
     void loginSucceeded(String memberId);
 
-    /** 계정 잠김 여부 확인 (3회 연속 실패 시 24시간 잠금) */
+    /** 계정 잠김 여부 확인 (3회 연속 실패 시 자정까지 잠금) */
     boolean isLocked(String memberId);
 }

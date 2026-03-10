@@ -76,11 +76,11 @@ public class UserController {
      */
     @PostMapping("/signIn")
     public ApiResponse<SignInResponse> signIn(@RequestBody SignInRequest request) {
-        System.out.println("user ======" + request);
+        System.out.println("요청 파라미터 : " + request);
 
         // 계정 잠금 여부 먼저 확인 (3회 연속 실패 시 24시간 잠금)
         if (loginAttemptService.isLocked(request.getMemberId())) {
-            return ApiResponse.fail("로그인 시도가 3회 초과되어 24시간 동안 로그인이 제한됩니다.");
+            return ApiResponse.fail("로그인 3회 연속 실패로 오늘 자정까지 로그인이 제한됩니다.");
         }
 
         try {
@@ -96,7 +96,7 @@ public class UserController {
 
             // 실패 후 잠금 상태가 됐는지 확인
             if (loginAttemptService.isLocked(request.getMemberId())) {
-                return ApiResponse.fail("로그인 3회 연속 실패로 24시간 동안 로그인이 제한됩니다.");
+                return ApiResponse.fail("로그인 3회 연속 실패로 오늘 자정까지 로그인이 제한됩니다.");
             }
 
             return ApiResponse.fail(e.getMessage());
