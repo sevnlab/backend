@@ -17,12 +17,24 @@ repositories {
     mavenCentral()
 }
 
+configurations {
+    all {
+        // Logback 제거 (Log4j2로 교체)
+        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+    }
+}
+
 dependencies {
     /* ===============================
        Spring Boot 기본
     =============================== */
     implementation 'org.springframework.boot:spring-boot-starter-web'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+    /* ===============================
+       Logging - SLF4J + Log4j2
+    =============================== */
+    implementation 'org.springframework.boot:spring-boot-starter-log4j2'
 
     /* ===============================
        Testcontainers

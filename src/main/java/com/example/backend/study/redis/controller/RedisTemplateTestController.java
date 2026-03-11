@@ -1,6 +1,7 @@
 package com.example.backend.study.redis.controller;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -12,6 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @RestController
 @RequestMapping("/redis")
 @RequiredArgsConstructor
@@ -39,7 +41,7 @@ public class RedisTemplateTestController {
     public Object hashGet(@RequestParam String key,
                           @RequestParam String field) {
 
-        System.out.println(redisTemplate.opsForHash().entries(key));
+        log.info("Redis Hash entries - key: {}, entries: {}", key, redisTemplate.opsForHash().entries(key));
         return redisTemplate.opsForHash().get(key, field);
     }
 

@@ -18,6 +18,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
@@ -28,6 +29,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+@Slf4j
 @RestController
 @CrossOrigin(origins = "http://localhost:3000") // 占쌔댐옙 占쏙옙占쏙옙占쏙옙占쏙옙占쏙옙占쏙옙 占쏙옙청占쏙옙 占쏙옙占?
 public class UserController {
@@ -65,10 +67,10 @@ public class UserController {
      */
     @PostMapping("/signUp")
     public ResponseEntity<String> signUp(@RequestBody Member member) {
-        System.out.println("user ======" + member.toString());
+        log.info("회원가입 요청: {}", member);
 
         userService.signUp(member);
-        return ResponseEntity.ok("회占쏙옙占쏙옙占쏙옙占쏙옙 占싹뤄옙퓸占쏙옙占쏙옙求占?");
+        return ResponseEntity.ok("가입완료");
     }
 
     /**
@@ -76,7 +78,7 @@ public class UserController {
      */
     @PostMapping("/signIn")
     public ApiResponse<SignInResponse> signIn(@RequestBody SignInRequest request) {
-        System.out.println("요청 파라미터. : " + request);
+        log.info("로그인 요청 memberId: {}", request.getMemberId()); // 비밀번호는 로그에 남기지 않음
 
         // 계정 잠금 여부 먼저 확인 (3회 연속 실패 시 24시간 잠금)
         if (loginAttemptService.isLocked(request.getMemberId())) {
@@ -130,7 +132,7 @@ public class UserController {
 //                + naverClientId + "&redirect_uri=" + URLEncoder.encode(naverRedirectUri, StandardCharsets.UTF_8)
 //                + "&state=" + state;
 
-        System.out.println(naverUrl);
+        log.info("네이버 로그인 URL 생성: {}", naverUrl);
 
         Map<String, String> response = new HashMap<>();
         response.put("redirectUrl", naverUrl);
@@ -140,8 +142,7 @@ public class UserController {
 
     @GetMapping("/oauth2/callback/naver")
     public ResponseEntity<?> handleNaverCallback2(@RequestParam String code, @RequestParam String state) {
-        System.out.println("占식띰옙占쏙옙占?占쏙옙회 ==> " + code);
-        System.out.println("占식띰옙占쏙옙占?占쏙옙회 ==> " + state);
+        log.debug("네이버 콜백 수신 - code: {}, state: {}", code, state);
 
         String tokenUrl = "https://nid.naver.com/oauth2.0/token?grant_type=authorization_code"
                 + "&client_id=" + naverClientId
@@ -156,13 +157,13 @@ public class UserController {
         if (response.getStatusCode() == HttpStatus.OK) {
             // 占쌓쇽옙占쏙옙 占쏙옙큰 占쏙옙占쏙옙
             String responseBody = response.getBody();
-            System.out.println("占쏙옙큰 占쏙옙占쏙옙: " + responseBody);
+            log.debug("네이버 토큰 응답 수신 완료");
 
             try {
                 ObjectMapper objectMapper = new ObjectMapper();
                 JsonNode tokenJson = objectMapper.readTree(responseBody);
                 String accessToken = tokenJson.get("access_token").asText();
-                System.out.println("占쌓쇽옙占쏙옙 占쏙옙큰: " + accessToken);
+                log.debug("네이버 액세스 토큰 수신 완료"); // 실제 토큰값은 보안상 로그에 남기지 않음
 
                 // 占쌓쇽옙占쏙옙 占쏙옙큰占쏙옙 占싱울옙占쏙옙 占쏙옙占쏙옙占?占쏙옙占쏙옙 占쏙옙청
                 HttpHeaders headers = new HttpHeaders();
@@ -214,7 +215,7 @@ public class UserController {
 
                 // 占쏙옙큰占쏙옙 클占쏙옙占싱억옙트占쏙옙占쏙옙 占쏙옙占쏙옙占쏙옙占쏙옙 占쏙옙占쏙옙
 
-                System.out.println(ResponseEntity.ok(Map.of("token", token)));
+                log.info("네이버 로그인 성공, 클라이언트로 리다이렉트");
                 return ResponseEntity.status(HttpStatus.FOUND)
                         .header(HttpHeaders.LOCATION, "http://localhost:3000/oauth2/callback/naver?token=" + token)
                         .build();
@@ -230,7 +231,7 @@ public class UserController {
 //                return ResponseEntity.ok("占쏙옙占싱뱄옙 占싸깍옙占쏙옙 占쏙옙占쏙옙")
 
             } catch (JsonProcessingException e) {
-                e.printStackTrace();
+                log.error("네이버 콜백 JSON 처리 중 오류", e);
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("JSON 처占쏙옙 占쏙옙占쏙옙 占쌩삼옙");
             }
 

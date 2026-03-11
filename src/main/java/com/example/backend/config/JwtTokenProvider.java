@@ -3,6 +3,7 @@ package com.example.backend.config;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
@@ -11,6 +12,7 @@ import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
+@Slf4j
 @Component
 public class JwtTokenProvider {
 
@@ -33,15 +35,11 @@ public class JwtTokenProvider {
 
     // JWT token generation
     public String generateToken(Authentication authentication, String loginType) {
-        System.out.println("????000");
-        System.out.println("????111" + authentication.getName());
+        log.info("JWT 토큰 생성 - 사용자: {}", authentication.getName());
 
         String username = authentication.getName();
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtExpirationMs);
-
-        System.out.println("3333 => " + jwtSecret);
-        System.out.println("Secret Key Length: " + jwtSecret.length());
 
         return Jwts.builder()
                 .subject(username)
@@ -71,7 +69,7 @@ public class JwtTokenProvider {
                     .parseSignedClaims(token);
             return true;
         } catch (JwtException | IllegalArgumentException ex) {
-            System.out.println("Invalid JWT token: " + ex.getMessage());
+            log.warn("유효하지 않은 JWT 토큰: {}", ex.getMessage());
         }
         return false;
     }
