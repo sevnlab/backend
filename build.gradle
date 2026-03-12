@@ -71,6 +71,24 @@ dependencies {
     implementation 'org.redisson:redisson-spring-boot-starter:3.27.2'
 
     /* ===============================
+       Kafka (대기열 시스템에서 DB 부하를 막기 위해 사용)
+    =============================== */
+
+    // Spring Boot와 Kafka를 연동해주는 핵심 라이브러리
+    // KafkaTemplate(메시지 발행), @KafkaListener(메시지 수신) 등을 사용할 수 있게 해줌
+    // 버전은 Spring Boot 3.5.6의 BOM(Bill of Materials)이 자동으로 맞춰줌 - 직접 명시 불필요
+    implementation 'org.springframework.kafka:spring-kafka'
+
+    // Kafka 관련 테스트 도구 (EmbeddedKafka 등)
+    // 테스트 시 실제 Kafka 서버 없이 인메모리 Kafka 브로커를 띄울 수 있게 해줌
+    testImplementation 'org.springframework.kafka:spring-kafka-test'
+
+    // Testcontainers의 Kafka 모듈
+    // 이미 프로젝트에 Testcontainers가 있으므로, 테스트 시 Docker로 실제 Kafka 컨테이너를 띄울 수 있음
+    // spring-kafka-test의 인메모리 방식보다 실제 환경에 가까운 통합 테스트 가능
+    testImplementation 'org.testcontainers:kafka'
+
+    /* ===============================
        Lombok
     =============================== */
     compileOnly 'org.projectlombok:lombok'
