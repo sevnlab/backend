@@ -30,3 +30,6 @@ spring:
           - 192.168.87.134:7006
         max-redirects: 5      # 클러스터에서 요청을 다른 노드로 리다이렉트할 최대 횟수
       connect-timeout: 3000   # Redis 연결 타임아웃 (ms)
+
+  kafka:
+    bootstrap-servers: 192.168.87.135:9092  # Kafka 브로커 주소 (VM IP 확인 후 수정)

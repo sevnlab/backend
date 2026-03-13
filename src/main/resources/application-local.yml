@@ -19,3 +19,5 @@ spring:
       - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
       - org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration
       - org.redisson.spring.starter.RedissonAutoConfigurationV2
+      # 로컬에는 Kafka 서버가 없으므로 자동설정 제외
+      - org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration

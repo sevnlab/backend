@@ -3,9 +3,6 @@
 
 # 프로젝트 인코딩: UTF-8
 
-server:
-  port: 7777 # 스프링 부트 내장 서버 포트
-
 # JWT 설정
 jwt:
   secret: NnRGaHZMb3p5ZVhDYXZ2V1ZaTlRkYm91aTBRcHJlNVJOSzRRMnNYdE1aR2k3b1JiVG9wZzNSclF1RmQ=
@@ -75,3 +72,22 @@ spring:
       hibernate:
         show_sql: true
         format_sql: true
+
+  kafka:
+    bootstrap-servers: localhost:9092  # 기본값 (카프카 초기 접속 브로커 주소)
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer  # 메시지 키를 byte[] 로 직렬화
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer # 메시지 값을 byte[] 로 직렬화, JSON 전송 시 문자열로 변환후 전송
+      acks: all          # 모든 replica에 기록 후 확인 (데이터 유실 방지), ISR 전체 복제 확인 후 ack, 가장 안전하지만 느림
+      retries: 3         # 전송 실패 시 재시도 횟수
+    consumer:
+      group-id: waiting-queue-group # 같은 그룹 내 컨슈머들은 파티션을 분담해서 소비 
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer # byte[] -> String 역직렬화
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer # byte[] -> String 역직렬화
+      auto-offset-reset: earliest   # 새 컨슈머 그룹은 가장 오래된 메시지부터 읽음
+      enable-auto-commit: false     # 수동 commit (처리 완료 후 명시적으로 commit) 
+
+# 커스텀 Kafka 토픽 이름 (KafkaConfig.java 에서 @Value 로 주입)
+kafka:
+  topic:
+    waiting-queue: waiting-queue    # 대기열 → 입장 허용 유저를 전달하는 토픽
