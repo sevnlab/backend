@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  status="WARN" : Log4j2 자체 내부 로그를 WARN 이상만 출력 (설정 오류 같은 것만 보여줌)
+-->
+<Configuration status="WARN">
+
+    <Properties>
+
+        <!--
+          LOG_PATTERN : 로그 한 줄이 어떤 형태로 출력될지 정하는 포맷
+            %d{yyyy-MM-dd HH:mm:ss.SSS} → 날짜+시간 (2026-03-12 14:23:01.123)
+            [%thread]                   → 어떤 스레드에서 찍힌 로그인지
+            [%X{traceId}]               → MDC에서 꺼낸 추적번호 (요청마다 고유 ID)
+            %-5level                    → 로그 레벨 (INFO, DEBUG, ERROR 등) 5자리 맞춤
+            %logger{36}                 → 어느 클래스에서 찍었는지 (최대 36자)
+            - %msg%n                    → 실제 로그 메시지, %n은 줄바꿈
+        -->
+        <Property name="LOG_PATTERN">%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] [%X{traceId}] %-5level %logger{36} - %msg%n</Property>
+
+    </Properties>
+
+    <!--
+      Appenders : 로그를 "어디에" 출력할지 정의하는 곳
+                  콘솔(터미널), 파일 등 여러 목적지를 여기서 만들어둠
+    -->
+    <Appenders>
+
+        <!--
+          Console : 터미널(IntelliJ 콘솔창)에 로그를 출력하는 설정
+          target="SYSTEM_OUT" → 표준 출력으로 내보냄
+        -->
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+        </Console>
+
+        <!-- ========================
+             로컬 전용 파일 Appender
+             경로: backend/logs/ (상대경로 → IntelliJ 실행 기준)
+        ========================= -->
+
+        <!--
+          RollingFile : 파일에 로그를 기록하되, 조건이 되면 새 파일로 넘기는 설정
+          fileName    → 현재 기록 중인 파일 경로/이름
+          filePattern → 롤링된 파일의 이름 규칙 (.gz = 자동 압축)
+        -->
+        <RollingFile name="LocalFileAppender"
+                     fileName="logs/app.log"
+                     filePattern="logs/app-%d{yyyy-MM-dd}.log.gz">
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+            <Policies>
+                <!--
+                  TimeBasedTriggeringPolicy
+                  interval="1"    → 1일마다 새 파일로 롤링
+                  modulate="true" → 자정에 정확히 맞춰서 롤링
+                -->
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+                <!--
+                  SizeBasedTriggeringPolicy
+                  하루가 안 됐어도 파일이 100MB 넘으면 바로 새 파일로 롤링
+                -->
+                <SizeBasedTriggeringPolicy size="100MB"/>
+            </Policies>
+            <!--
+              max="30" → 롤링된 파일 최대 30개 보관 (30일치), 넘으면 오래된 것 자동 삭제
+            -->
+            <DefaultRolloverStrategy max="30"/>
+        </RollingFile>
+
+        <!--
+          ErrorFileAppender : ERROR 레벨 이상 로그만 별도 파일로 따로 저장
+          (장애 추적 시 error.log 하나만 봐도 되도록)
+        -->
+        <RollingFile name="LocalErrorFileAppender"
+                     fileName="logs/error.log"
+                     filePattern="logs/error-%d{yyyy-MM-dd}.log.gz">
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+            <!--
+              ThresholdFilter : 조건에 맞는 로그만 이 Appender에 기록
+              level="ERROR"     → ERROR 이상만
+              onMatch="ACCEPT"  → 조건 맞으면 기록
+              onMismatch="DENY" → 조건 안 맞으면 무시 (INFO, WARN 등은 여기 안 씀)
+            -->
+            <ThresholdFilter level="ERROR" onMatch="ACCEPT" onMismatch="DENY"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+                <SizeBasedTriggeringPolicy size="50MB"/>
+            </Policies>
+            <!-- 에러 로그는 60일치 보관 (일반 로그보다 길게) -->
+            <DefaultRolloverStrategy max="60"/>
+        </RollingFile>
+
+        <!-- ========================
+             운영 전용 파일 Appender
+             경로: D:/logs/ (나중에 직접 수정)
+        ========================= -->
+
+        <RollingFile name="RealFileAppender"
+                     fileName="D:/logs/app.log"
+                     filePattern="D:/logs/app-%d{yyyy-MM-dd}.log.gz">
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+                <SizeBasedTriggeringPolicy size="100MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="30"/>
+        </RollingFile>
+
+        <RollingFile name="RealErrorFileAppender"
+                     fileName="D:/logs/error.log"
+                     filePattern="D:/logs/error-%d{yyyy-MM-dd}.log.gz">
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+            <ThresholdFilter level="ERROR" onMatch="ACCEPT" onMismatch="DENY"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+                <SizeBasedTriggeringPolicy size="50MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="60"/>
+        </RollingFile>
+
+        <!--
+          Async : 파일 쓰기를 별도 스레드에서 처리하게 감싸는 래퍼
+          → 로그 찍을 때 파일 I/O 때문에 요청 처리가 느려지지 않게 해줌
+        -->
+        <Async name="AsyncRealFile">
+            <AppenderRef ref="RealFileAppender"/>
+        </Async>
+        <Async name="AsyncRealError">
+            <AppenderRef ref="RealErrorFileAppender"/>
+        </Async>
+
+    </Appenders>
+
+    <!--
+      Loggers : "어떤 클래스/패키지의 로그를" "어느 레벨부터" "어느 Appender로" 보낼지 설정
+    -->
+    <Loggers>
+
+        <!-- ===== 로컬 환경 (spring.profiles.active=local) ===== -->
+        <SpringProfile name="local">
+
+            <!--
+              Root : 아무 Logger에도 안 걸리는 나머지 전부를 처리하는 기본값
+              level="INFO" → INFO, WARN, ERROR만 출력 (DEBUG, TRACE는 무시)
+            -->
+            <Root level="INFO">
+                <AppenderRef ref="Console"/>
+                <AppenderRef ref="LocalFileAppender"/>
+                <AppenderRef ref="LocalErrorFileAppender"/>
+            </Root>
+
+            <!--
+              내 서비스 코드(com.example.backend 패키지)는 DEBUG까지 출력
+              additivity="false" → Root Logger로 중복 전달 안 함 (같은 로그 두 번 안 찍힘)
+            -->
+            <Logger name="com.example.backend" level="DEBUG" additivity="false">
+                <AppenderRef ref="Console"/>
+                <AppenderRef ref="LocalFileAppender"/>
+                <AppenderRef ref="LocalErrorFileAppender"/>
+            </Logger>
+
+            <!-- Hibernate가 실행하는 SQL 쿼리 출력 -->
+            <Logger name="org.hibernate.SQL" level="DEBUG" additivity="false">
+                <AppenderRef ref="Console"/>
+                <AppenderRef ref="LocalFileAppender"/>
+            </Logger>
+
+            <!-- SQL 쿼리의 파라미터 값까지 출력 (ex: where id=? → where id=1) -->
+            <Logger name="org.hibernate.orm.jdbc.bind" level="TRACE" additivity="false">
+                <AppenderRef ref="Console"/>
+                <AppenderRef ref="LocalFileAppender"/>
+            </Logger>
+
+        </SpringProfile>
+
+        <!-- ===== 운영 환경 (spring.profiles.active=real) ===== -->
+        <SpringProfile name="real">
+
+            <Root level="INFO">
+                <AppenderRef ref="AsyncRealFile"/>  <!-- 전체 로그 파일 -->
+                <AppenderRef ref="AsyncRealError"/> <!-- ERROR는 에러 파일에도 중복 저장 -->
+            </Root>
+
+            <!-- 운영에서는 내 코드도 INFO까지만 (DEBUG는 너무 많음) -->
+            <Logger name="com.example.backend" level="INFO" additivity="false">
+                <AppenderRef ref="AsyncRealFile"/>
+                <AppenderRef ref="AsyncRealError"/>
+            </Logger>
+
+            <!-- 운영에서도 SQL은 기록 (장애 추적 시 유용) -->
+            <Logger name="org.hibernate.SQL" level="DEBUG" additivity="false">
+                <AppenderRef ref="AsyncRealFile"/>
+            </Logger>
+
+            <!-- 운영에서도 SQL 파라미터 값 기록 -->
+            <Logger name="org.hibernate.orm.jdbc.bind" level="TRACE" additivity="false">
+                <AppenderRef ref="AsyncRealFile"/>
+            </Logger>
+
+        </SpringProfile>
+
+    </Loggers>
+
+</Configuration>
