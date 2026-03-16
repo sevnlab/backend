@@ -6,42 +6,30 @@ import com.example.backend.entity.Member;
 import com.example.backend.repository.SignUpRepository;
 import com.example.backend.repository.UserRepository;
 import jakarta.transaction.Transactional;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.authentication.BadCredentialsException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-
 @Service
-//public class UserService implements UserDetailsService {
+@RequiredArgsConstructor
 public class UserService {
 
     private final SignUpRepository signUpRepository;
     private final PasswordEncoder passwordEncoder;
+    private final UserRepository userRepository;
 
-    @Autowired
-    private UserRepository userRepository;
-
-    // 생성자 주입
-    @Autowired
-    public UserService(SignUpRepository signUpRepository, PasswordEncoder passwordEncoder) {
-        this.signUpRepository = signUpRepository;
-        this.passwordEncoder = passwordEncoder;
-    }
-
+    /**
+     * 회원가입
+     */
     @Transactional
     public void signUp(Member member) {
-        // 네이버 로그인 사용자는 비밀번호를 설정하지 않음
-//        if (!users.isSocialLogin()) {
-//            users.setPassword(passwordEncoder.encode(users.getPassword())); // 비밀번호를 암호화해서 저장
-//        }
         signUpRepository.save(member);
     }
 
     /**
-     * 로그인 시도
+     * 로그인
+     * DB에서 아이디 + 비밀번호로 조회, 없으면 예외 발생
      */
     public SignInResponse signIn(SignInRequest request) {
         Member member = signUpRepository.findByMemberIdAndPassword(request.getMemberId(), request.getPassword())
@@ -51,26 +39,13 @@ public class UserService {
         response.setMemberId(member.getMemberId());
         response.setName(member.getName());
         response.setEmail(member.getEmail());
-
         return response;
     }
 
-    // userId로 사용자 조회
-    public Member findById(String id) {
-        return userRepository.findByMemberId(id);
+    /**
+     * memberId로 회원 조회 (소셜 로그인 시 기존 회원 여부 확인용)
+     */
+    public Member findById(String memberId) {
+        return userRepository.findByMemberId(memberId);
     }
-
-//    @Override
-//    public UserDetails loadUserByUsername(String userId) throws UsernameNotFoundException {
-//        // DB에서 userId로 사용자 정보 조회
-//        Member user = signUpRepository.findByUserId(userId)
-//                .orElseThrow(() -> new UsernameNotFoundException("User not found with id: " + userId));
-//
-//        // 사용자 정보를 UserDetails 객체로 변환하여 반환
-//        return new org.springframework.security.core.userdetails.User(
-////                user.getUserId(),
-//                user.getPassword(),
-//                new ArrayList<>()
-//        );
-//    }
 }

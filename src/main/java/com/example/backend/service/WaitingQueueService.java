@@ -20,7 +20,7 @@ import java.util.Set;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Profile("real")
+@Profile({"real", "test"})
 public class WaitingQueueService {
 
     private final StringRedisTemplate stringRedisTemplate;

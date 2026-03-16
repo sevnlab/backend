@@ -2,7 +2,6 @@ package com.example.backend.controller;
 
 import com.example.backend.config.JwtTokenProvider;
 import com.example.backend.dto.ApiResponse;
-import com.example.backend.dto.Login;
 import com.example.backend.dto.SignInRequest;
 import com.example.backend.dto.SignInResponse;
 import com.example.backend.entity.Member;
@@ -11,42 +10,37 @@ import com.example.backend.service.UserService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
 @Slf4j
 @RestController
-@CrossOrigin(origins = "http://localhost:3000") // 占쌔댐옙 占쏙옙占쏙옙占쏙옙占쏙옙占쏙옙占쏙옙 占쏙옙청占쏙옙 占쏙옙占?
+@RequiredArgsConstructor
+@CrossOrigin(origins = "http://localhost:3000")
 public class UserController {
 
-    @Autowired
-    private AuthenticationManager authenticationManager;
+    private final UserService userService;
+    private final LoginAttemptService loginAttemptService;
+    private final JwtTokenProvider jwtTokenProvider;
 
-    @Autowired
-    private UserService userService;
+    // ObjectMapper는 thread-safe → static으로 공유 (매 요청마다 생성 낭비 방지)
+    private static final ObjectMapper objectMapper = new ObjectMapper();
 
-    @Autowired
-    private LoginAttemptService loginAttemptService;
+    // RestTemplate도 재사용 (매 요청마다 new RestTemplate() 생성 금지)
+    private final RestTemplate restTemplate = new RestTemplate();
 
-    @Autowired
-    private JwtTokenProvider jwtTokenProvider;
-
-    // application.properties占쏙옙 占쏙옙占실듸옙 占쏙옙占쏙옙占쏙옙 占쏙옙占쌉뱄옙占쏙옙
     @Value("${spring.security.oauth2.client.registration.naver.client-id}")
     private String naverClientId;
 
@@ -68,195 +62,145 @@ public class UserController {
     @PostMapping("/signUp")
     public ResponseEntity<String> signUp(@RequestBody Member member) {
         log.info("회원가입 요청: {}", member);
-
         userService.signUp(member);
         return ResponseEntity.ok("가입완료");
     }
 
     /**
      * 로그인
+     * 3회 연속 실패 시 당일 자정까지 계정 잠금
      */
     @PostMapping("/signIn")
     public ApiResponse<SignInResponse> signIn(@RequestBody SignInRequest request) {
-        log.info("로그인 요청 memberId: {}", request.getMemberId()); // 비밀번호는 로그에 남기지 않음
+        log.info("로그인 요청 memberId: {}", request.getMemberId());
 
-        // 계정 잠금 여부 먼저 확인 (3회 연속 실패 시 24시간 잠금)
+        // 잠금 여부 먼저 확인 (Redis에서 실패 횟수 조회)
         if (loginAttemptService.isLocked(request.getMemberId())) {
             return ApiResponse.fail("로그인 3회 연속 실패로 오늘 자정까지 로그인이 제한됩니다.");
         }
 
         try {
             SignInResponse signInResponse = userService.signIn(request);
-
-            // 로그인 성공 시 실패 횟수 초기화
-            loginAttemptService.loginSucceeded(request.getMemberId());
-
+            loginAttemptService.loginSucceeded(request.getMemberId()); // 성공 시 실패 횟수 초기화
             return ApiResponse.success("정상적으로 처리되었습니다.", signInResponse);
-        } catch (Exception e) {
-            // 로그인 실패 시 횟수 증가
-            loginAttemptService.loginFailed(request.getMemberId());
 
-            // 실패 후 잠금 상태가 됐는지 확인
+        } catch (Exception e) {
+            loginAttemptService.loginFailed(request.getMemberId()); // 실패 횟수 증가
+
+            // 이번 실패로 잠금 상태가 됐는지 재확인
             if (loginAttemptService.isLocked(request.getMemberId())) {
                 return ApiResponse.fail("로그인 3회 연속 실패로 오늘 자정까지 로그인이 제한됩니다.");
             }
-
             return ApiResponse.fail(e.getMessage());
         }
-
-//        try {
-//            Authentication authentication = authenticationManager.authenticate(
-//                    new UsernamePasswordAuthenticationToken(request.getMemberId(), request.getPassword())
-//            );
-//
-//            String token = jwtTokenProvider.generateToken(authentication, "regular");
-//            return ResponseEntity.ok(new Login.res(token));
-//        } catch (BadCredentialsException e) {
-//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 실패: 아이디 또는 비밀번호가 틀렸습니다.");
-//        } catch (Exception e) {
-//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
-//        }
     }
 
-    // 占쏙옙占싱뱄옙 占싸깍옙占쏙옙
+    /**
+     * 네이버 로그인 URL 반환
+     * 프론트엔드가 이 URL로 사용자를 리다이렉트하면 네이버 로그인 화면으로 이동
+     */
     @GetMapping("/oauth/naver")
     public ResponseEntity<?> redirectNaverLogin() {
         String state = UUID.randomUUID().toString();
-
         String naverUrl = "https://nid.naver.com/oauth2.0/authorize?response_type=code&client_id="
-                + naverClientId + "&redirect_uri=" + URLEncoder.encode(naverRedirectUri, StandardCharsets.UTF_8)
+                + naverClientId
+                + "&redirect_uri=" + URLEncoder.encode(naverRedirectUri, StandardCharsets.UTF_8)
                 + "&state=" + state;
 
-        // properties 占쏙옙占싹울옙占쏙옙 占쏙옙占쏙옙占쏙옙 clientId占쏙옙 redirectUri占쏙옙 URL 占쏙옙占쏙옙
-//        String naverUrl = "https://nid.naver.com/oauth2.0/authorize?response_type=code&client_id="
-//                + naverClientId + "&redirect_uri=" + URLEncoder.encode(naverRedirectUri, StandardCharsets.UTF_8)
-//                + "&state=" + state;
-
-        log.info("네이버 로그인 URL 생성: {}", naverUrl);
-
-        Map<String, String> response = new HashMap<>();
-        response.put("redirectUrl", naverUrl);
-
-        return ResponseEntity.ok(response);
+        log.info("네이버 로그인 URL 생성");
+        return ResponseEntity.ok(Map.of("redirectUrl", naverUrl));
     }
 
+    /**
+     * 네이버 로그인 콜백
+     * 네이버 인증 완료 후 네이버가 code + state를 붙여 이 URL로 리다이렉트
+     *
+     * 처리 흐름:
+     *   1. 인증 코드(code)로 네이버에서 액세스 토큰 발급
+     *   2. 액세스 토큰으로 네이버 사용자 정보 조회
+     *   3. 기존 회원이면 바로 로그인, 신규면 자동 회원가입 후 로그인
+     *   4. JWT 발급 → 프론트엔드로 리다이렉트
+     */
     @GetMapping("/oauth2/callback/naver")
-    public ResponseEntity<?> handleNaverCallback2(@RequestParam String code, @RequestParam String state) {
-        log.debug("네이버 콜백 수신 - code: {}, state: {}", code, state);
+    public ResponseEntity<?> handleNaverCallback(@RequestParam String code, @RequestParam String state) {
+        log.debug("네이버 콜백 수신 - state: {}", state);
 
+        // 1. 인증 코드로 액세스 토큰 요청
         String tokenUrl = "https://nid.naver.com/oauth2.0/token?grant_type=authorization_code"
                 + "&client_id=" + naverClientId
                 + "&client_secret=" + naverClientSecret
                 + "&code=" + code
                 + "&state=" + state;
 
-        // RestTemplate占쏙옙 占싱울옙占쏙옙 占쌓쇽옙占쏙옙 占쏙옙큰 占쏙옙청
-        RestTemplate restTemplate = new RestTemplate();
-        ResponseEntity<String> response = restTemplate.postForEntity(tokenUrl, null, String.class);
+        ResponseEntity<String> tokenResponse = restTemplate.postForEntity(tokenUrl, null, String.class);
+        if (tokenResponse.getStatusCode() != HttpStatus.OK) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("네이버 로그인 실패");
+        }
 
-        if (response.getStatusCode() == HttpStatus.OK) {
-            // 占쌓쇽옙占쏙옙 占쏙옙큰 占쏙옙占쏙옙
-            String responseBody = response.getBody();
-            log.debug("네이버 토큰 응답 수신 완료");
+        try {
+            // 2. 액세스 토큰 파싱
+            JsonNode tokenJson = objectMapper.readTree(tokenResponse.getBody());
+            String accessToken = tokenJson.get("access_token").asText();
+            log.debug("네이버 액세스 토큰 수신 완료");
 
-            try {
-                ObjectMapper objectMapper = new ObjectMapper();
-                JsonNode tokenJson = objectMapper.readTree(responseBody);
-                String accessToken = tokenJson.get("access_token").asText();
-                log.debug("네이버 액세스 토큰 수신 완료"); // 실제 토큰값은 보안상 로그에 남기지 않음
+            // 3. 액세스 토큰으로 사용자 정보 요청
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Authorization", "Bearer " + accessToken);
+            ResponseEntity<String> userInfoResponse = restTemplate.exchange(
+                    "https://openapi.naver.com/v1/nid/me",
+                    HttpMethod.GET,
+                    new HttpEntity<>(headers),
+                    String.class
+            );
 
-                // 占쌓쇽옙占쏙옙 占쏙옙큰占쏙옙 占싱울옙占쏙옙 占쏙옙占쏙옙占?占쏙옙占쏙옙 占쏙옙청
-                HttpHeaders headers = new HttpHeaders();
-                headers.set("Authorization", "Bearer " + accessToken);
-                HttpEntity<String> entity = new HttpEntity<>(headers);
+            // 4. 사용자 정보 파싱 (네이버는 "response" 키 안에 실제 데이터가 있음)
+            JsonNode userInfo = objectMapper.readTree(userInfoResponse.getBody()).get("response");
+            String naverId = userInfo.get("id").asText();
 
-                ResponseEntity<String> userInfoResponse = restTemplate.exchange(
-                        "https://openapi.naver.com/v1/nid/me",
-                        HttpMethod.GET,
-                        entity,
-                        String.class
-                );
-
-                // 占쏙옙占쏙옙占?占쏙옙占쏙옙 占쏙옙占쏙옙 처占쏙옙
-                String userInfo = userInfoResponse.getBody();
-                JsonNode userInfoJson = objectMapper.readTree(userInfo);
-
-                // 占쏙옙占쏙옙占?ID 占쏙옙占쏙옙占쏙옙占쏙옙
-                String id = userInfoJson.get("response").get("id").asText();
-
-                // 占쏙옙占쏙옙占?占쏙옙占쏙옙 占쏙옙占쏙옙 확占쏙옙
-                Member existingUser = userService.findById(id);
-                if (existingUser == null) {
-                    // 占싱곤옙占쏙옙占쌘몌옙 회占쏙옙 占쏙옙占?처占쏙옙
-                    String cleanBirthday = userInfoJson.get("response").get("birthday").asText().replace("-", "");
-                    String cleanMobile = userInfoJson.get("response").get("mobile").asText().replace("-", "");
-
-                    Member newUser = new Member();
-                    newUser.setMemberId(id);
-                    newUser.setEmail(userInfoJson.get("response").get("email").asText());
-                    newUser.setName(userInfoJson.get("response").get("name").asText());
-//                    newUser.setMobile(cleanMobile);
-//                    newUser.setBIRTH(userInfoJson.get("response").get("birthyear").asText() + cleanBirthday);
-//                    newUser.setGENDER(userInfoJson.get("response").get("gender").asText());
-
-                    // 占쏙옙占싱뱄옙 占싸깍옙占쏙옙占쏙옙占쏙옙 占쏙옙溝占?占쏙옙占쏙옙占쏙옙譴퓐占?占쏙옙橘占싫ｏ옙占?占쏙옙占쏙옙占쏙옙占쏙옙 占쏙옙占쏙옙
-//                    newUser.setSocialLogin(true);
-
-                    // 회占쏙옙 占쏙옙占?
-                    userService.signUp(newUser);
-
-                    // 占쏙옙占쏙옙 占쏙옙占쌉듸옙 占쏙옙占쏙옙米占?占쏙옙占쏙옙 占쏙옙占쏙옙
-                    existingUser = newUser;
-                }
-
-                // JWT 占쏙옙큰 占쏙옙占쏙옙 (占싹뱄옙 占싸깍옙占싸곤옙 占쏙옙占쏙옙)
-                Authentication authentication = new UsernamePasswordAuthenticationToken(existingUser, null, new ArrayList<>());
-                String token = jwtTokenProvider.generateToken(authentication, "naver");
-
-                // 占쏙옙큰占쏙옙 클占쏙옙占싱억옙트占쏙옙占쏙옙 占쏙옙占쏙옙占쏙옙占쏙옙 占쏙옙占쏙옙
-
-                log.info("네이버 로그인 성공, 클라이언트로 리다이렉트");
-                return ResponseEntity.status(HttpStatus.FOUND)
-                        .header(HttpHeaders.LOCATION, "http://localhost:3000/oauth2/callback/naver?token=" + token)
-                        .build();
-
-//                return ResponseEntity.ok(Map.of("token", token));  // 占쌤쇽옙 JSON 占쏙옙占쏙옙
-
-//                return ResponseEntity.status(HttpStatus.FOUND)
-//                        .header(HttpHeaders.LOCATION, "http://localhost:3000/oauth2/callback/naver?token=" + token)
-//                        .build();
-
-//                return ResponseEntity.ok(new Login.res(token));
-
-//                return ResponseEntity.ok("占쏙옙占싱뱄옙 占싸깍옙占쏙옙 占쏙옙占쏙옙")
-
-            } catch (JsonProcessingException e) {
-                log.error("네이버 콜백 JSON 처리 중 오류", e);
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("JSON 처占쏙옙 占쏙옙占쏙옙 占쌩삼옙");
+            // 5. 기존 회원 확인, 없으면 자동 회원가입
+            Member member = userService.findById(naverId);
+            if (member == null) {
+                member = new Member();
+                member.setMemberId(naverId);
+                member.setEmail(userInfo.get("email").asText());
+                member.setName(userInfo.get("name").asText());
+                userService.signUp(member);
+                log.info("네이버 신규 회원 자동 가입 - naverId={}", naverId);
             }
 
-        } else {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("占쏙옙占싱뱄옙 占싸깍옙占쏙옙 占쏙옙占쏙옙");
+            // 6. JWT 발급 → 프론트엔드로 리다이렉트
+            Authentication authentication = new UsernamePasswordAuthenticationToken(member, null, new ArrayList<>());
+            String token = jwtTokenProvider.generateToken(authentication, "naver");
+
+            log.info("네이버 로그인 성공 - naverId={}", naverId);
+            return ResponseEntity.status(HttpStatus.FOUND)
+                    .header(HttpHeaders.LOCATION, "http://localhost:3000/oauth2/callback/naver?token=" + token)
+                    .build();
+
+        } catch (JsonProcessingException e) {
+            log.error("네이버 콜백 JSON 처리 중 오류", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("JSON 처리 오류");
         }
     }
 
-    // 카카占쏙옙 占싸깍옙占쏙옙
+    /**
+     * 카카오 로그인 URL 반환
+     */
     @GetMapping("/oauth/kakao")
     public ResponseEntity<?> redirectKakaoLogin() {
-        // properties 占쏙옙占싹울옙占쏙옙 占쏙옙占쏙옙占쏙옙 clientId占쏙옙 redirectUri占쏙옙 URL 占쏙옙占쏙옙
         String kakaoUrl = "https://kauth.kakao.com/oauth/authorize?response_type=code&client_id="
-                + kakaoClientId + "&redirect_uri=" + URLEncoder.encode(kakaoRedirectUri, StandardCharsets.UTF_8);
+                + kakaoClientId
+                + "&redirect_uri=" + URLEncoder.encode(kakaoRedirectUri, StandardCharsets.UTF_8);
 
-        Map<String, String> response = new HashMap<>();
-        response.put("redirectUrl", kakaoUrl);
-
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(Map.of("redirectUrl", kakaoUrl));
     }
 
+    /**
+     * 카카오 로그인 콜백 (미구현)
+     * TODO: 카카오 사용자 정보 조회 및 JWT 발급 구현 예정
+     */
     @GetMapping("/kakao/callback")
     public ResponseEntity<?> handleKakaoCallback(@RequestParam String code) {
-        // 카카占쏙옙 占쏙옙큰 占쌩깍옙 占쏙옙 占쏙옙占쏙옙占?占쏙옙占쏙옙 占쏙옙청 처占쏙옙
-        // 占쏙옙큰 占쌩깍옙 占쏙옙 클占쏙옙占싱억옙트占쏙옙 占십울옙占쏙옙 占쏙옙占쏙옙占쏙옙 占쏙옙占쏙옙
-        return ResponseEntity.ok("카카占쏙옙 占싸깍옙占쏙옙 占쏙옙占쏙옙");
+        return ResponseEntity.ok("카카오 로그인 완료");
     }
 }

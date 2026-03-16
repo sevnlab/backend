@@ -27,7 +27,7 @@ import java.util.Map;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/queue")
-@Profile("real")
+@Profile({"real", "test"})
 public class WaitingQueueController {
 
     private final WaitingQueueService waitingQueueService;
