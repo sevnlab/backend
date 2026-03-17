@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Set;
 
@@ -27,6 +28,10 @@ public class WaitingQueueService {
 
     // Redis Key
     private static final String QUEUE_KEY = "waiting-queue";
+    private static final String TOKEN_KEY_PREFIX = "entry-token:";
+
+    // 입장 토큰 만료 시간: 5분 (재접속 여유 시간)
+    private static final Duration TOKEN_TTL = Duration.ofMinutes(5);
 
     /**
      * 대기열 진입
@@ -113,5 +118,28 @@ public class WaitingQueueService {
     public void remove(String userId) {
         stringRedisTemplate.opsForZSet().remove(QUEUE_KEY, userId);
         log.info("[대기열] 제거 - userId={}", userId);
+    }
+
+    /**
+     * 입장 토큰 Redis 저장 (TTL 5분)
+     * SSE 미연결 유저가 재접속했을 때 GET /api/queue/token 으로 조회 가능
+     *
+     * @param userId 유저 ID
+     * @param token  입장 토큰 (UUID)
+     */
+    public void saveEntryToken(String userId, String token) {
+        stringRedisTemplate.opsForValue().set(TOKEN_KEY_PREFIX + userId, token, TOKEN_TTL);
+        log.info("[대기열] 입장 토큰 저장 - userId={}, ttl=5min", userId);
+    }
+
+    /**
+     * 입장 토큰 조회
+     * 만료됐거나 아직 입장 허용 전이면 null 반환
+     *
+     * @param userId 유저 ID
+     * @return 입장 토큰, 없으면 null
+     */
+    public String getEntryToken(String userId) {
+        return stringRedisTemplate.opsForValue().get(TOKEN_KEY_PREFIX + userId);
     }
 }

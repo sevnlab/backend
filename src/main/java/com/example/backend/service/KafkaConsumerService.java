@@ -30,6 +30,7 @@ import org.springframework.stereotype.Service;
 public class KafkaConsumerService {
 
     private final SseEmitterService sseEmitterService;
+    private final WaitingQueueService waitingQueueService;
 
     @KafkaListener(
             topics = "${kafka.topic.waiting-queue}",
@@ -70,16 +71,19 @@ public class KafkaConsumerService {
         // TODO: DB에 실제 접수 처리
 
         // 입장 토큰 발급 (UUID 기반)
-        // 추후 Redis에 저장 후 짧은 TTL 설정 예정
         String entryToken = java.util.UUID.randomUUID().toString();
+
+        // Redis에 입장 토큰 저장 (TTL 5분)
+        // SSE 미연결 유저도 재접속 후 GET /api/queue/token 으로 토큰 조회 가능
+        waitingQueueService.saveEntryToken(userId, entryToken);
 
         // SSE 연결 중인 유저에게 입장 허용 알림
         if (sseEmitterService.isConnected(userId)) {
             sseEmitterService.sendAdmitted(userId, entryToken);
             log.info("[Kafka] 입장 허용 SSE 전송 - userId={}", userId);
         } else {
-            // SSE 미연결 상태 (브라우저 닫힘 등) → 추후 Redis에 토큰 저장해서 재접속 시 확인 가능하게 처리 예정
-            log.warn("[Kafka] SSE 미연결 - userId={}, entryToken={}", userId, entryToken);
+            // SSE 미연결 상태 (브라우저 닫힘 등) → Redis에 토큰 저장됨, 5분 내 재접속 시 조회 가능
+            log.warn("[Kafka] SSE 미연결 - userId={}, 토큰 Redis 저장 완료 (TTL 5min)", userId);
         }
     }
 }

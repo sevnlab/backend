@@ -1,5 +1,7 @@
 package com.example.backend.config;
 
+import com.example.backend.filter.JwtAuthenticationFilter;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -10,33 +12,34 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
+
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                // JWT 방식이므로 CSRF, 세션 모두 비활성화
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
                 .authorizeHttpRequests(auth -> auth
-                        // 인증 없이 접근 가능한 경로
                         .requestMatchers(
-                                "/signIn", "/signUp",
+                                "/signIn", "/signUp", "/logout",
                                 "/oauth/kakao", "/oauth/naver", "/oauth2/callback/naver"
                         ).permitAll()
-
-                        // 동시성 테스트용 API
                         .requestMatchers("/account/**").permitAll()
-
-                        // SSE는 JWT를 컨트롤러에서 직접 검증하므로 Security 인증 제외
                         .requestMatchers("/api/queue/**").permitAll()
-
                         .anyRequest().authenticated()
-                );
+                )
+
+                // JwtAuthenticationFilter가 UsernamePasswordAuthenticationFilter 전에 실행
+                // → 쿠키에서 JWT를 꺼내 SecurityContext에 등록한 뒤 컨트롤러로 넘어감
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

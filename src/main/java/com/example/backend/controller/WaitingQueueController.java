@@ -113,6 +113,35 @@ public class WaitingQueueController {
     }
 
     /**
+     * 입장 토큰 조회 (SSE 미연결 유저 재접속 시 사용)
+     *
+     * Kafka Consumer가 입장 허용 처리 시 Redis에 저장한 토큰을 반환.
+     * 토큰은 5분 TTL이므로 그 안에 재접속해야 함.
+     *
+     * Request Header: Authorization: Bearer {JWT토큰}
+     * Response: { success: true, data: { entryToken: "uuid" } }
+     */
+    @GetMapping("/token")
+    public ResponseEntity<ApiResponse<?>> getToken(
+            @RequestHeader("Authorization") String authHeader) {
+
+        String userId = extractUserId(authHeader);
+        if (userId == null) {
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.fail("유효하지 않은 토큰입니다."));
+        }
+
+        String entryToken = waitingQueueService.getEntryToken(userId);
+        if (entryToken == null) {
+            return ResponseEntity.ok(ApiResponse.fail("입장 토큰이 없습니다. (만료되었거나 아직 입장 허용 전)"));
+        }
+
+        log.info("[대기열 토큰 조회] userId={}", userId);
+        return ResponseEntity.ok(ApiResponse.success("입장 토큰 조회 성공",
+                Map.of("entryToken", entryToken)));
+    }
+
+    /**
      * 대기열 취소 (자발적 이탈)
      *
      * Request Header: Authorization: Bearer {JWT토큰}

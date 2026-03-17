@@ -10,6 +10,7 @@ import com.example.backend.service.UserService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,6 +22,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.UUID;
@@ -56,6 +58,9 @@ public class UserController {
     @Value("${spring.security.oauth2.client.registration.kakao.redirect-uri}")
     private String kakaoRedirectUri;
 
+    @Value("${jwt.expiration}")
+    private int jwtExpirationMs;
+
     /**
      * 회원가입
      */
@@ -71,28 +76,65 @@ public class UserController {
      * 3회 연속 실패 시 당일 자정까지 계정 잠금
      */
     @PostMapping("/signIn")
-    public ApiResponse<SignInResponse> signIn(@RequestBody SignInRequest request) {
+    public ApiResponse<SignInResponse> signIn(@RequestBody SignInRequest request,
+                                              HttpServletResponse response) {
         log.info("로그인 요청 memberId: {}", request.getMemberId());
 
-        // 잠금 여부 먼저 확인 (Redis에서 실패 횟수 조회)
         if (loginAttemptService.isLocked(request.getMemberId())) {
             return ApiResponse.fail("로그인 3회 연속 실패로 오늘 자정까지 로그인이 제한됩니다.");
         }
 
         try {
             SignInResponse signInResponse = userService.signIn(request);
-            loginAttemptService.loginSucceeded(request.getMemberId()); // 성공 시 실패 횟수 초기화
+            loginAttemptService.loginSucceeded(request.getMemberId());
+
+            // JWT 발급 → httpOnly Cookie로 전송
+            // httpOnly: JS에서 접근 불가 (XSS 방어)
+            // sameSite=Lax: CSRF 방어 (외부 사이트에서 쿠키 전송 차단)
+            Authentication authentication = new UsernamePasswordAuthenticationToken(
+                    request.getMemberId(), null, new ArrayList<>());
+            String token = jwtTokenProvider.generateToken(authentication, "general");
+
+            ResponseCookie cookie = ResponseCookie.from("jwt", token)
+                    .httpOnly(true)
+                    .path("/")
+                    .maxAge(Duration.ofMillis(jwtExpirationMs))
+                    .sameSite("Lax")
+                    // .secure(true) // HTTPS 환경에서 활성화
+                    .build();
+
+            response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+            log.info("로그인 성공 - memberId={}", request.getMemberId());
+
             return ApiResponse.success("정상적으로 처리되었습니다.", signInResponse);
 
         } catch (Exception e) {
-            loginAttemptService.loginFailed(request.getMemberId()); // 실패 횟수 증가
+            loginAttemptService.loginFailed(request.getMemberId());
 
-            // 이번 실패로 잠금 상태가 됐는지 재확인
             if (loginAttemptService.isLocked(request.getMemberId())) {
                 return ApiResponse.fail("로그인 3회 연속 실패로 오늘 자정까지 로그인이 제한됩니다.");
             }
             return ApiResponse.fail(e.getMessage());
         }
+    }
+
+    /**
+     * 로그아웃
+     * JWT 쿠키를 maxAge=0 으로 덮어써서 즉시 만료시킴
+     */
+    @PostMapping("/logout")
+    public ResponseEntity<ApiResponse<?>> logout(HttpServletResponse response) {
+        ResponseCookie cookie = ResponseCookie.from("jwt", "")
+                .httpOnly(true)
+                .path("/")
+                .maxAge(0)
+                .sameSite("Lax")
+                .build();
+
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+        log.info("로그아웃");
+
+        return ResponseEntity.ok(ApiResponse.success("로그아웃 되었습니다.", null));
     }
 
     /**

@@ -5,6 +5,8 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 import org.springframework.web.cors.CorsConfiguration;
 
+import java.util.List;
+
 public class CustomCorsFilter extends CorsFilter {
     public CustomCorsFilter() {
         super(configurationSource());
@@ -12,12 +14,17 @@ public class CustomCorsFilter extends CorsFilter {
 
     private static UrlBasedCorsConfigurationSource configurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.addAllowedOrigin("*"); // 모든 도메인에서 요청을 허용하려면 * 사용
-        config.addAllowedMethod("*"); // 모든 HTTP 메서드 허용
-        config.addAllowedHeader("*"); // 모든 헤더 허용
+
+        // * 대신 명시적 origin 지정 — allowCredentials(true) 와 함께 쓰려면 필수
+        config.setAllowedOrigins(List.of("http://localhost:3000"));
+        config.addAllowedMethod("*");
+        config.addAllowedHeader("*");
+
+        // true 로 설정해야 브라우저가 쿠키(httpOnly Cookie)를 요청에 포함시킴
+        config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", config); // 모든 경로에 대해 설정 적용
+        source.registerCorsConfiguration("/**", config);
 
         return source;
     }

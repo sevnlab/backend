@@ -32,4 +32,4 @@ spring:
       connect-timeout: 3000   # Redis 연결 타임아웃 (ms)
 
   kafka:
-    bootstrap-servers: 192.168.87.135:9092  # Kafka 브로커 주소 (VM IP 확인 후 수정)
+    bootstrap-servers: 192.168.87.135:9092,192.168.87.136:9092,192.168.87.137:9092
