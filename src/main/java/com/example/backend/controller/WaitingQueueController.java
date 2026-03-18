@@ -1,6 +1,5 @@
 package com.example.backend.controller;
 
-import com.example.backend.config.JwtTokenProvider;
 import com.example.backend.dto.ApiResponse;
 import com.example.backend.service.SseEmitterService;
 import com.example.backend.service.WaitingQueueService;
@@ -9,7 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.StringUtils;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -18,10 +17,8 @@ import java.util.Map;
 /**
  * 대기열 컨트롤러 (운영 환경 전용)
  *
- * 흐름:
- *   1. 로그인 성공 후 JWT 토큰 보유한 유저가
- *   2. POST /api/queue/enter 로 대기열 진입
- *   3. GET  /api/queue/status 로 내 순번 조회
+ * JwtAuthenticationFilter 가 쿠키에서 JWT를 읽어 SecurityContext에 등록하므로
+ * 컨트롤러에서는 Authentication 파라미터로 로그인한 사용자 정보를 바로 받음.
  */
 @Slf4j
 @RestController
@@ -32,24 +29,17 @@ public class WaitingQueueController {
 
     private final WaitingQueueService waitingQueueService;
     private final SseEmitterService sseEmitterService;
-    private final JwtTokenProvider jwtTokenProvider;
 
     /**
      * 대기열 진입
-     *
-     * Request Header: Authorization: Bearer {JWT토큰}
-     * Response: { success: true, data: { rank: 3, total: 100 } }
      */
     @PostMapping("/enter")
-    public ResponseEntity<ApiResponse<?>> enter(
-            @RequestHeader("Authorization") String authHeader) {
-
-        String userId = extractUserId(authHeader);
-        if (userId == null) {
-            return ResponseEntity.badRequest()
-                    .body(ApiResponse.fail("유효하지 않은 토큰입니다."));
+    public ResponseEntity<ApiResponse<?>> enter(Authentication authentication) {
+        if (authentication == null) {
+            return ResponseEntity.status(401).body(ApiResponse.fail("로그인이 필요합니다."));
         }
 
+        String userId = authentication.getName();
         boolean isNew = waitingQueueService.enter(userId);
         long rank = waitingQueueService.getRank(userId);
         long total = waitingQueueService.getSize();
@@ -63,20 +53,14 @@ public class WaitingQueueController {
 
     /**
      * 내 순번 조회
-     *
-     * Request Header: Authorization: Bearer {JWT토큰}
-     * Response: { success: true, data: { rank: 3, total: 100 } }
      */
     @GetMapping("/status")
-    public ResponseEntity<ApiResponse<?>> status(
-            @RequestHeader("Authorization") String authHeader) {
-
-        String userId = extractUserId(authHeader);
-        if (userId == null) {
-            return ResponseEntity.badRequest()
-                    .body(ApiResponse.fail("유효하지 않은 토큰입니다."));
+    public ResponseEntity<ApiResponse<?>> status(Authentication authentication) {
+        if (authentication == null) {
+            return ResponseEntity.status(401).body(ApiResponse.fail("로그인이 필요합니다."));
         }
 
+        String userId = authentication.getName();
         long rank = waitingQueueService.getRank(userId);
         if (rank == -1) {
             return ResponseEntity.ok(ApiResponse.fail("대기열에 등록되지 않은 사용자입니다."));
@@ -89,93 +73,48 @@ public class WaitingQueueController {
 
     /**
      * SSE 구독 (실시간 순번/입장 알림)
-     *
-     * 클라이언트는 이 연결을 열어두면 서버가 알아서 push해줌:
-     *   - event: rank     → 현재 순번 정보 (스케줄러가 주기적으로 전송)
-     *   - event: admitted → 입장 허용 + 입장 토큰 (Kafka Consumer가 처리 완료 후 전송)
-     *
-     * produces = TEXT_EVENT_STREAM_VALUE: SSE 전용 Content-Type 지정 필수
      */
     @GetMapping(value = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public SseEmitter stream(
-            @RequestHeader("Authorization") String authHeader) {
-
-        String userId = extractUserId(authHeader);
-        if (userId == null) {
-            // SSE는 ResponseEntity 반환이 안 되므로 연결 즉시 에러 전송 후 종료
+    public SseEmitter stream(Authentication authentication) {
+        if (authentication == null) {
             SseEmitter emitter = new SseEmitter();
-            emitter.completeWithError(new IllegalArgumentException("유효하지 않은 토큰입니다."));
+            emitter.completeWithError(new IllegalArgumentException("로그인이 필요합니다."));
             return emitter;
         }
 
+        String userId = authentication.getName();
         log.info("[SSE] 구독 요청 - userId={}", userId);
         return sseEmitterService.connect(userId);
     }
 
     /**
-     * 입장 토큰 조회 (SSE 미연결 유저 재접속 시 사용)
-     *
-     * Kafka Consumer가 입장 허용 처리 시 Redis에 저장한 토큰을 반환.
-     * 토큰은 5분 TTL이므로 그 안에 재접속해야 함.
-     *
-     * Request Header: Authorization: Bearer {JWT토큰}
-     * Response: { success: true, data: { entryToken: "uuid" } }
-     */
-    @GetMapping("/token")
-    public ResponseEntity<ApiResponse<?>> getToken(
-            @RequestHeader("Authorization") String authHeader) {
-
-        String userId = extractUserId(authHeader);
-        if (userId == null) {
-            return ResponseEntity.badRequest()
-                    .body(ApiResponse.fail("유효하지 않은 토큰입니다."));
-        }
-
-        String entryToken = waitingQueueService.getEntryToken(userId);
-        if (entryToken == null) {
-            return ResponseEntity.ok(ApiResponse.fail("입장 토큰이 없습니다. (만료되었거나 아직 입장 허용 전)"));
-        }
-
-        log.info("[대기열 토큰 조회] userId={}", userId);
-        return ResponseEntity.ok(ApiResponse.success("입장 토큰 조회 성공",
-                Map.of("entryToken", entryToken)));
-    }
-
-    /**
-     * 대기열 취소 (자발적 이탈)
-     *
-     * Request Header: Authorization: Bearer {JWT토큰}
+     * 대기열 취소
      */
     @DeleteMapping("/cancel")
-    public ResponseEntity<ApiResponse<?>> cancel(
-            @RequestHeader("Authorization") String authHeader) {
-
-        String userId = extractUserId(authHeader);
-        if (userId == null) {
-            return ResponseEntity.badRequest()
-                    .body(ApiResponse.fail("유효하지 않은 토큰입니다."));
+    public ResponseEntity<ApiResponse<?>> cancel(Authentication authentication) {
+        if (authentication == null) {
+            return ResponseEntity.status(401).body(ApiResponse.fail("로그인이 필요합니다."));
         }
 
-        waitingQueueService.remove(userId);
+        waitingQueueService.remove(authentication.getName());
         return ResponseEntity.ok(ApiResponse.success("대기열에서 취소되었습니다.", null));
     }
 
     /**
-     * Authorization 헤더에서 userId 추출
-     * "Bearer eyJhbGci..." → userId
+     * 입장 토큰 조회 (SSE 미연결 유저 재접속 시)
      */
-    private String extractUserId(String authHeader) {
-        // "Bearer " 접두사 제거 후 토큰만 꺼냄
-        if (!StringUtils.hasText(authHeader) || !authHeader.startsWith("Bearer ")) {
-            return null;
+    @GetMapping("/token")
+    public ResponseEntity<ApiResponse<?>> getToken(Authentication authentication) {
+        if (authentication == null) {
+            return ResponseEntity.status(401).body(ApiResponse.fail("로그인이 필요합니다."));
         }
 
-        String token = authHeader.substring(7);
-
-        if (!jwtTokenProvider.validateToken(token)) {
-            return null;
+        String entryToken = waitingQueueService.getEntryToken(authentication.getName());
+        if (entryToken == null) {
+            return ResponseEntity.ok(ApiResponse.fail("입장 토큰이 없습니다. (만료되었거나 아직 입장 허용 전)"));
         }
 
-        return jwtTokenProvider.getUsernameFromJWT(token);
+        return ResponseEntity.ok(ApiResponse.success("입장 토큰 조회 성공",
+                Map.of("entryToken", entryToken)));
     }
 }
