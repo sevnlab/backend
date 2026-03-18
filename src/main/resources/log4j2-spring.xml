@@ -150,10 +150,10 @@
             </Root>
 
             <!--
-              내 서비스 코드(com.example.backend 패키지)는 DEBUG까지 출력
+              내 서비스 코드(com.marketlens 패키지)는 DEBUG까지 출력
               additivity="false" → Root Logger로 중복 전달 안 함 (같은 로그 두 번 안 찍힘)
             -->
-            <Logger name="com.example.backend" level="DEBUG" additivity="false">
+            <Logger name="com.marketlens" level="DEBUG" additivity="false">
                 <AppenderRef ref="Console"/>
                 <AppenderRef ref="LocalFileAppender"/>
                 <AppenderRef ref="LocalErrorFileAppender"/>
@@ -182,7 +182,7 @@
             </Root>
 
             <!-- 운영에서는 내 코드도 INFO까지만 (DEBUG는 너무 많음) -->
-            <Logger name="com.example.backend" level="INFO" additivity="false">
+            <Logger name="com.marketlens" level="INFO" additivity="false">
                 <AppenderRef ref="AsyncRealFile"/>
                 <AppenderRef ref="AsyncRealError"/>
             </Logger>

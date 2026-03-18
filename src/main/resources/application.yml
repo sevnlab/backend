@@ -11,6 +11,8 @@ jwt:
 # 로그 설정은 log4j2-spring.xml 에서 관리
 
 spring:
+  application:
+    name: marketLens
   security:
     oauth2:
       client:
