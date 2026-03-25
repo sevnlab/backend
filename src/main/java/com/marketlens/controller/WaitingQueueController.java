@@ -5,7 +5,6 @@ import com.marketlens.service.SseEmitterService;
 import com.marketlens.service.WaitingQueueService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Profile;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -24,7 +23,6 @@ import java.util.Map;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/queue")
-@Profile({"real", "test"})
 public class WaitingQueueController {
 
     private final WaitingQueueService waitingQueueService;
@@ -73,6 +71,7 @@ public class WaitingQueueController {
 
     /**
      * SSE 구독 (실시간 순번/입장 알림)
+     * 이미 입장 토큰이 있으면 즉시 admitted 이벤트 전송
      */
     @GetMapping(value = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter stream(Authentication authentication) {
@@ -84,7 +83,17 @@ public class WaitingQueueController {
 
         String userId = authentication.getName();
         log.info("[SSE] 구독 요청 - userId={}", userId);
-        return sseEmitterService.connect(userId);
+
+        SseEmitter emitter = sseEmitterService.connect(userId);
+
+        // 이미 입장 처리된 유저가 SSE 재연결한 경우 → 즉시 admitted 전송
+        String existingToken = waitingQueueService.getEntryToken(userId);
+        if (existingToken != null) {
+            log.info("[SSE] 재연결 - 입장 토큰 존재, admitted 즉시 전송 - userId={}", userId);
+            sseEmitterService.sendAdmitted(userId, existingToken);
+        }
+
+        return emitter;
     }
 
     /**
@@ -98,6 +107,22 @@ public class WaitingQueueController {
 
         waitingQueueService.remove(authentication.getName());
         return ResponseEntity.ok(ApiResponse.success("대기열에서 취소되었습니다.", null));
+    }
+
+    /**
+     * 브라우저 종료 시 정리 (sendBeacon 호출용)
+     * 대기열 취소 + 활성 유저 제거를 한번에 처리
+     */
+    @PostMapping("/exit")
+    public ResponseEntity<ApiResponse<?>> exit(Authentication authentication) {
+        if (authentication == null) {
+            return ResponseEntity.ok(ApiResponse.success("처리 완료", null));
+        }
+        String userId = authentication.getName();
+        waitingQueueService.remove(userId);
+        waitingQueueService.leaveActive(userId);
+        log.info("[브라우저 종료] userId={} 대기열/활성 정리 완료", userId);
+        return ResponseEntity.ok(ApiResponse.success("처리 완료", null));
     }
 
     /**

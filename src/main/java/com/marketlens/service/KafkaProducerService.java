@@ -19,7 +19,6 @@ import java.util.concurrent.CompletableFuture;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Profile({"real", "test"})
 public class KafkaProducerService {
 
     private final KafkaTemplate<String, String> kafkaTemplate;

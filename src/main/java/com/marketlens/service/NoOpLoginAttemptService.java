@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
  * local 프로파일에서만 활성화되며, real 프로파일에서는 RedisLoginAttemptService가 사용됨
  */
 @Service
-@Profile("local")
+@Profile("noop")
 public class NoOpLoginAttemptService implements LoginAttemptService {
 
     @Override

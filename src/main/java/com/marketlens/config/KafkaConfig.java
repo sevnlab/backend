@@ -22,7 +22,6 @@ import org.springframework.kafka.listener.ContainerProperties;
  */
 @EnableKafka
 @Configuration
-@Profile({"real", "test"})
 public class KafkaConfig {
 
     @Value("${kafka.topic.waiting-queue}")

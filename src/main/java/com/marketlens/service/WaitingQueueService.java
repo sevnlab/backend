@@ -2,7 +2,6 @@ package com.marketlens.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Profile;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -21,7 +20,6 @@ import java.util.Set;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Profile({"real", "test"})
 public class WaitingQueueService {
 
     private final StringRedisTemplate stringRedisTemplate;

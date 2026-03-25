@@ -26,7 +26,6 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Profile({"real", "test"})
 public class KafkaConsumerService {
 
     private final SseEmitterService sseEmitterService;

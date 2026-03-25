@@ -26,7 +26,7 @@ import java.time.Duration;
  *   real  → Redis Cluster 연결 (application-real.yml 참고)
  */
 @Configuration
-@Profile("real")
+@Profile({"real", "local"})
 @EnableCaching
 public class RedisConfiguration {
 
