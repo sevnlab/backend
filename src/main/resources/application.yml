@@ -6,7 +6,7 @@
 # JWT 설정
 jwt:
   secret: NnRGaHZMb3p5ZVhDYXZ2V1ZaTlRkYm91aTBRcHJlNVJOSzRRMnNYdE1aR2k3b1JiVG9wZzNSclF1RmQ=
-  expiration: 3600000
+  expiration: 900000
 
 # 로그 설정은 log4j2-spring.xml 에서 관리
 

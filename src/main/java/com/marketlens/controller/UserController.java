@@ -76,8 +76,7 @@ public class UserController {
      * 3회 연속 실패 시 당일 자정까지 계정 잠금
      */
     @PostMapping("/signIn")
-    public ApiResponse<SignInResponse> signIn(@RequestBody SignInRequest request,
-                                              HttpServletResponse response) {
+    public ApiResponse<SignInResponse> signIn(@RequestBody SignInRequest request, HttpServletResponse response) {
         log.info("로그인 요청 memberId: {}", request.getMemberId());
 
         if (loginAttemptService.isLocked(request.getMemberId())) {
@@ -89,21 +88,27 @@ public class UserController {
             loginAttemptService.loginSucceeded(request.getMemberId());
 
             // JWT 발급 → httpOnly Cookie로 전송
-            // httpOnly: JS에서 접근 불가 (XSS 방어)
-            // sameSite=Lax: CSRF 방어 (외부 사이트에서 쿠키 전송 차단)
             Authentication authentication = new UsernamePasswordAuthenticationToken(
                     request.getMemberId(), null, new ArrayList<>());
             String token = jwtTokenProvider.generateToken(authentication, "general");
 
-            ResponseCookie cookie = ResponseCookie.from("jwt", token)
-                    .httpOnly(true)
-                    .path("/")
-                    .maxAge(Duration.ofMillis(jwtExpirationMs))
-                    .sameSite("Lax")
-                    // .secure(true) // HTTPS 환경에서 활성화
-                    .build();
+            log.info("생성된 토큰 조회 : {}", token);
 
+            // 브라우저 쿠키에 저장 시킴
+            // 스프링이 제공하는 쿠키 빌더
+            ResponseCookie cookie = ResponseCookie.from("jwt", token)
+                .httpOnly(true) // httpOnly: JS에서 접근 불가 (XSS 방어)
+                .path("/") // 이 쿠키를 모든 경로 요청에 자동 첨부
+                .maxAge(Duration.ofMillis(jwtExpirationMs)) // 쿠키 유효 시간 = JWT 만료 시간과 동일 하게 설정, 해당옵션이 없으면 세션쿠키 (브라우저 닫으면 사라짐)
+                .sameSite("Lax") // sameSite=Lax: CSRF 방어 (외부 사이트에서 쿠키 전송 차단), 외부에서 GET 링크 클릭만 허용, 이외 POST 등은  차단
+                // .secure(true) // HTTPS 환경에서 활성화, 나중에 HTTPS 통신을 하게되면 주석 해제하기
+            .build();
+
+            // HTTP 응답 헤더에 쿠키를 추가
+            // 브라우저가 이 헤더를 보고 쿠키를 저장함
+            // 응답 헤더 형태: Set-Cookie: jwt=eyJhbGc...; Path=/; Max-Age=3600; HttpOnly; SameSite=Lax
             response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+
             log.info("로그인 성공 - memberId={}", request.getMemberId());
 
             return ApiResponse.success("정상적으로 처리되었습니다.", signInResponse);
