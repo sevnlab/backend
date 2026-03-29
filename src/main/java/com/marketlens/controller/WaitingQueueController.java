@@ -38,8 +38,8 @@ public class WaitingQueueController {
         }
 
         String userId = authentication.getName();
-        boolean isNew = waitingQueueService.enter(userId);
-        long rank = waitingQueueService.getRank(userId);
+        boolean isNew = waitingQueueService.enter(userId); // 대기열 등록
+        long rank = waitingQueueService.getRank(userId); // 현재 몇번째 인지 확인
         long total = waitingQueueService.getSize();
 
         String message = isNew ? "대기열에 등록되었습니다." : "이미 대기열에 등록되어 있습니다.";
@@ -84,6 +84,7 @@ public class WaitingQueueController {
         String userId = authentication.getName();
         log.info("[SSE] 구독 요청 - userId={}", userId);
 
+        // SseEmitter 생성 및 등록
         SseEmitter emitter = sseEmitterService.connect(userId);
 
         // 이미 입장 처리된 유저가 SSE 재연결한 경우 → 즉시 admitted 전송
@@ -93,7 +94,7 @@ public class WaitingQueueController {
             sseEmitterService.sendAdmitted(userId, existingToken);
         }
 
-        return emitter;
+        return emitter; // 반환해도 연결 안끊김
     }
 
     /**

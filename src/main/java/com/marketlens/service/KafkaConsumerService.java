@@ -57,9 +57,10 @@ public class KafkaConsumerService {
     )
     public void consumeApprovedUser(
             @Payload String userId,
-            @Header(KafkaHeaders.RECEIVED_PARTITION) int partition,
-            @Header(KafkaHeaders.OFFSET) long offset,
-            Acknowledgment acknowledgment) {
+            @Header(KafkaHeaders.RECEIVED_PARTITION) int partition, // 몇번 파티션에서 왔는지
+            @Header(KafkaHeaders.OFFSET) long offset, // 몇번째 메시지 였는지
+            Acknowledgment acknowledgment) // 수동 commit 용
+    {
 
         log.info("[Kafka] 메시지 수신 - userId={}, partition={}, offset={}", userId, partition, offset);
 

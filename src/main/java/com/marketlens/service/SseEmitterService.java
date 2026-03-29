@@ -41,6 +41,7 @@ public class SseEmitterService {
         SseEmitter existing = emitters.remove(userId);
         if (existing != null) {
             existing.complete();
+            log.info("기존 SSE 연결 종료");
         }
 
         SseEmitter emitter = new SseEmitter(TIMEOUT_MS);

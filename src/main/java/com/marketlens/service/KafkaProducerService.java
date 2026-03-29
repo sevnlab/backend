@@ -40,6 +40,13 @@ public class KafkaProducerService {
 
         future.whenComplete((result, ex) -> {
             if (ex != null) {
+
+                // 대기열에 다시넣는 로직 필요 (일단 주석해놓고 추후 고민)
+                // 방법 1: 대기열에 다시 넣기
+                // waitingQueueService.enter(userId);
+
+                // 방법 2: Dead Letter Queue (실패 전용 토픽)에 따로 보관
+                // kafkaTemplate.send("waiting-queue-failed", userId, userId);
                 log.error("[Kafka] 메시지 발행 실패 - userId={}, error={}", userId, ex.getMessage());
             } else {
                 log.debug("[Kafka] 메시지 발행 성공 - userId={}, partition={}, offset={}",

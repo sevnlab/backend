@@ -65,7 +65,7 @@ public class WaitingQueueService {
      */
     public boolean enter(String userId) {
         // score = 현재 시각 (밀리초) → 먼저 들어온 사람이 작은 score = 앞 순번
-        double score = Instant.now().toEpochMilli();
+        double score = Instant.now().toEpochMilli(); // 현재 시각 (숫자)
 
         // add() : 이미 존재하는 member면 false 반환 (중복 등록 방지)
         Boolean added = stringRedisTemplate.opsForZSet().add(QUEUE_KEY, userId, score);
