@@ -1,5 +1,6 @@
 package com.marketlens.service;
 
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -55,6 +56,25 @@ public class WaitingQueueService {
 
     // 입장 토큰 만료 시간: 5분 (재접속 여유 시간)
     private static final Duration TOKEN_TTL = Duration.ofMinutes(5);
+
+    /**
+     * 서버 시작 시 대기열 상태 초기화
+     *
+     * 재시작 전 Redis에 남아있던 잔류 데이터를 제거.
+     * (10분 체류 제한이 있으므로 서버가 꺼진 시점에 입장 중이던 유저는 이미 무효)
+     */
+    @PostConstruct
+    public void clearQueueOnStartup() {
+        stringRedisTemplate.delete(QUEUE_KEY);
+        stringRedisTemplate.delete(ACTIVE_USERS_KEY);
+
+        Set<String> tokenKeys = stringRedisTemplate.keys(TOKEN_KEY_PREFIX + "*");
+        if (tokenKeys != null && !tokenKeys.isEmpty()) {
+            stringRedisTemplate.delete(tokenKeys);
+        }
+
+        log.info("[대기열] 서버 시작 - 대기열/활성유저/입장토큰 초기화 완료");
+    }
 
     /**
      * 대기열 진입
